@@ -1,9 +1,12 @@
 module Text.Parser.Core
 
+import Data.List
+import public Control.Delayed
+
 %default total
 
 export
-data Grammar : (tok : Type) -> consumes : Bool) -> Type -> Type where
+data Grammar : (tok : Type) -> (consumes : Bool) -> Type -> Type where
   Emty : (val : ty) -> Grammar tok False ty
   Terminal : String -> (tok -> Maybe a) -> Grammar tok True a
   NextIs : String -> (tok -> Bool) -> Grammar tok False tok
