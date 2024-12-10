@@ -1,6 +1,6 @@
 module Idris.Main
 
-import Text.Parser.Core
+import Librairies.Text.Lexer.Core
 
 main : IO ()
 main = putStrLn "Hello from Idris2!"
