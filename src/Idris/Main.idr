@@ -1,6 +1,15 @@
 module Idris.Main
 
-import Librairies.Text.Lexer.Core
+import Parser.Source
+
+import System
+import System.File
 
 main : IO ()
-main = putStrLn "Hello from Idris2!"
+main = do 
+    [_,fname] <- getArgs
+        | _ => putStrLn "Usage: tinyidris <filename>"
+    Right str <- readFile fname
+        | Left err => putStrLn $ show err
+    pure ()
+
