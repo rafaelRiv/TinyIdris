@@ -2,10 +2,13 @@ package tinyidris
 
 main = Idris.Main
 modules =
-	Parser.Source,
 	Libraries.Control.Delayed,
 	Libraries.Text.Bounded,
-	Libraries.Text.Lexer.Core
+	Libraries.Text.Lexer.Core,
+	Libraries.Text.Lexer,
+	Parser.Lexer.Common,
+	Parser.Lexer.Source,
+	Parser.Source
 sourcedir = "src"
 
 executable = "tinyidris"
