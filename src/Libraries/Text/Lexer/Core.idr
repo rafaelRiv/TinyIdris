@@ -3,8 +3,8 @@ module Libraries.Text.Lexer.Core
 import Data.List
 import Data.Maybe
 
-import Libraries.Text.Bounded
-import Libraries.Control.Delayed
+import public Libraries.Text.Bounded
+import public Libraries.Control.Delayed
 
 %default total
 
