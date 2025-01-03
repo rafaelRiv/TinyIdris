@@ -4,7 +4,7 @@ import Parser.Lexer.Source
 import System.File
 
 runParser : (str: String) -> IO ()
-runParser str = pure ()
+runParser str = lexTo str
 
 export parseFile : (fn : String) -> IO ()
 parseFile fn = do
