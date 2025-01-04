@@ -1,8 +1,10 @@
 module Parser.Lexer.Source
 
 import public Parser.Lexer.Common
-
 import Libraries.Utils.String
+import Libraries.Utils.Hex
+
+import Data.String
 
 %default total
 
@@ -11,7 +13,7 @@ data Token =
   -- Literals
   CharLit String |
   DoubleLit Double |
-  IntergerLit Integer |
+  IntegerLit Integer |
   StringLit String |
   -- Identifiers
 
@@ -24,13 +26,22 @@ Show Token where
   -- Literals
   show (CharLit x) = "character " ++ show x 
   show (DoubleLit x) = "double " ++ show x
-  show (IntergerLit x) = "integer " ++ show x
+  show (IntegerLit x) = "integer " ++ show x
   show (StringLit x) = "string " ++ show x
   -- Identifiers
   -- Comments
   show Comment = "comment"
   -- Special
   show (Unrecognised x) = "Unrecognised " ++ x
+
+fromHexLit : String -> Integer
+fromHexLit str
+  = if length str <= 2
+       then 0
+       else let num = assert_total (strTail (strTail str)) in
+            case fromHex (reverse num) of
+                 Nothing => 0
+                 Just n => cast n
 
 doubleLit : Lexer
 doubleLit
@@ -41,8 +52,9 @@ rawToken : TokenMap Token
 rawToken = 
   [
     (charLit, \x => CharLit (stripQuotes x)),
+    (digits, \x => IntegerLit (cast x)),
+    (hexLit, \x => IntegerLit (cast x)),
     (doubleLit, \x => DoubleLit (cast x)),
-    --(integerLit, \x => IntegerLit (stripQuotes x))
     --(stringLit, \x => StringLit (stripQuotes x))
     (comment, const Comment)
   ]

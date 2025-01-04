@@ -1,4 +1,1 @@
-module Main
-
-main : IO ()
-main = putStrLn "Hello world"
+0x12333
