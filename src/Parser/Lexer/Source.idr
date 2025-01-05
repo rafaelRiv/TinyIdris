@@ -3,6 +3,7 @@ module Parser.Lexer.Source
 import public Parser.Lexer.Common
 import Libraries.Utils.String
 import Libraries.Utils.Hex
+import Libraries.Utils.Octal
 
 import Data.String
 
@@ -43,6 +44,15 @@ fromHexLit str
                  Nothing => 0
                  Just n => cast n
 
+fromOctLit : String -> Integer
+fromOctLit str
+  = if length str <= 2
+       then 0
+       else let num = assert_total (strTail (strTail str)) in
+            case fromOct (reverse num) of
+                 Nothing => 0
+                 Just n => cast n
+
 doubleLit : Lexer
 doubleLit
     = digits <+> is '.' <+> digits <+> opt
@@ -52,10 +62,11 @@ rawToken : TokenMap Token
 rawToken = 
   [
     (charLit, \x => CharLit (stripQuotes x)),
-    (digits, \x => IntegerLit (cast x)),
-    (hexLit, \x => IntegerLit (cast x)),
     (doubleLit, \x => DoubleLit (cast x)),
-    --(stringLit, \x => StringLit (stripQuotes x))
+    (hexLit, \x => IntegerLit (fromHexLit x)),
+    (octLit, \x => IntegerLit (fromOctLit x)),
+    (digits, \x => IntegerLit (cast x)),
+    (stringLit, \x => StringLit (stripQuotes x)),
     (comment, const Comment)
   ]
 

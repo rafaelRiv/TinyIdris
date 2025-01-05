@@ -10,6 +10,7 @@ modules =
 	Libraries.Text.Quantity,
 	Libraries.Utils.String,
 	Libraries.Utils.Hex,
+	Libraries.Utils.Octal,
 	Parser.Lexer.Common,
 	Parser.Lexer.Source,
 	Parser.Source
