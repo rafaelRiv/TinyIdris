@@ -19,7 +19,7 @@ data Token =
   -- Identifiers
 
   -- Comments
-  Comment | 
+  Comment String | 
   -- Special
   Unrecognised String
 
@@ -31,7 +31,7 @@ Show Token where
   show (StringLit x) = "string " ++ show x
   -- Identifiers
   -- Comments
-  show Comment = "comment"
+  show (Comment x) = "comment" ++ x
   -- Special
   show (Unrecognised x) = "Unrecognised " ++ x
 
@@ -61,13 +61,14 @@ doubleLit
 rawToken : TokenMap Token
 rawToken = 
   [
-    (charLit, \x => CharLit (stripQuotes x)),
+    (comment, Comment),
     (doubleLit, \x => DoubleLit (cast x)),
     (hexLit, \x => IntegerLit (fromHexLit x)),
     (octLit, \x => IntegerLit (fromOctLit x)),
     (digits, \x => IntegerLit (cast x)),
     (stringLit, \x => StringLit (stripQuotes x)),
-    (comment, const Comment)
+    (charLit, \x => CharLit (stripQuotes x)),
+    (space, Comment)
   ]
 
 export
