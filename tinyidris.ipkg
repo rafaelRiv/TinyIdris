@@ -8,6 +8,7 @@ modules =
 	Libraries.Text.Lexer,
 	Libraries.Text.Token,
 	Libraries.Text.Quantity,
+	Libraries.Data.String.Extra,
 	Libraries.Utils.String,
 	Libraries.Utils.Hex,
 	Libraries.Utils.Octal,
