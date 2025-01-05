@@ -1,4 +1,5 @@
-module Main
-
-main : IO ()
-main = putStrLn "Hello world"
+'c'
+"string literal"
+123.123
+0x1233
+0o3444
