@@ -1,4 +1,8 @@
--- test
+-- One line comment
+{- 
+  Block comment
+-}
+||| Doc comment
 'c'
 "string literal"
 123.123
