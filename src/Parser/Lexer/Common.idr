@@ -51,6 +51,7 @@ export
 identAllowDashes : Lexer
 identAllowDashes = ident AllowDashes
 
+export
 namespaceIdent : Lexer
 namespaceIdent = ident Capitalised <+> many (is '.' <+> ident Capitalised <+> expect (is '.'))
 
