@@ -15,3 +15,5 @@ let
 NS.ns
 #
 (
+%test
+%cg { asdf }
