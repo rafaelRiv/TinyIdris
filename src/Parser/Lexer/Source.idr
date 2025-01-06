@@ -23,14 +23,17 @@ data Token =
   -- Identifiers
   HoleIdent String |
   Ident String |
-  DotSepIdent (List1 String) |
-  DotIdent String |
+  DotSepIdent (List1 String) | -- ident.ident
+  DotIdent String |            -- .ident
   Symbol String |
   -- Comments
   Comment String |
   DocComment String |
   -- Special
+  CGDirective String |
+  EndInput |
   Keyword String |
+  Pragma String |
   Unrecognised String
 
 Show Token where 
@@ -49,7 +52,10 @@ Show Token where
   show (Comment x) = "comment " ++ x
   show (DocComment x) = "doc comment " ++ x
   -- Special
+  show (CGDirective x) = "CGDirective " ++ x
+  show EndInput = "end of input"
   show (Keyword x) = "keyword " ++ x
+  show (Pragma x) = "pragma " ++ x
   show (Unrecognised x) = "Unrecognised " ++ x
 
 mutual
@@ -107,6 +113,28 @@ holeIdent = is '?' <+> identNormal
 dotIdent : Lexer
 dotIdent = is '.' <+> identNormal
 
+pragma : Lexer
+pragma = is '%' <+> identNormal
+
+doubleLit : Lexer
+doubleLit
+  = digits <+> is '.' <+> digits <+> opt
+        (is 'e' <+> opt (is '-' <|> is '+') <+> digits)
+
+-- Do this as an entire token, because the contents will be processed by
+-- a specific back end
+cgDirective : Lexer
+cgDirective
+  = exact "%cg" <+>
+    ((some space <+>
+        some (pred isAlphaNum) <+> many space <+>
+        is '{' <+> many (isNot '}') <+>
+        is '}')
+      <+> many (isNot '\n'))
+
+mkDirective : String -> Token
+mkDirective str = CGDirective (trim (substr 3 (length str) str))
+
 fromHexLit : String -> Integer
 fromHexLit str
   = if length str <= 2
@@ -124,11 +152,6 @@ fromOctLit str
             case fromOct (reverse num) of
                  Nothing => 0
                  Just n => cast n
-
-doubleLit : Lexer
-doubleLit
-    = digits <+> is '.' <+> digits <+> opt
-          (is 'e' <+> opt (is '-' <|> is '+') <+> digits)
 
 keywords : List String
 keywords = ["data", "module", "where", "let", "pat", "in", "do", "record",
@@ -156,20 +179,22 @@ validSymbol = some (pred isOpChar)
 
 rawToken : TokenMap Token
 rawToken = 
-  [
-    (comment, Comment),
+  [ (comment, Comment),
     (blockComment, Comment),
     (docComment, DocComment . drop 3),
-    (doubleLit, \x => DoubleLit (cast x)),
+    (cgDirective, mkDirective),
+    (holeIdent, \x => HoleIdent (assert_total (strTail x)))] ++
+  map (\x => (exact x, Symbol)) symbols ++
+  [ (doubleLit, \x => DoubleLit (cast x)),
     (hexLit, \x => IntegerLit (fromHexLit x)),
     (octLit, \x => IntegerLit (fromOctLit x)),
     (digits, \x => IntegerLit (cast x)),
     (stringLit, \x => StringLit (stripQuotes x)),
     (charLit, \x => CharLit (stripQuotes x)),
-    (holeIdent, \x => HoleIdent (assert_total (strTail x))),
     (dotIdent, \x => DotIdent (assert_total (strTail x))),
     (namespaceIdent, parseNamespace),
     (identNormal, parseIdent),
+    (pragma, \x => Pragma (assert_total (strTail x))),
     (space, Comment),
     (validSymbol, Symbol),
     (symbol, Unrecognised)
