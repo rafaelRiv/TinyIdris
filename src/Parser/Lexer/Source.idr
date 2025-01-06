@@ -1,12 +1,15 @@
 module Parser.Lexer.Source
 
 import public Parser.Lexer.Common
+
+import Data.List1
+import Data.List
+import Data.String
+import Libraries.Data.String.Extra
+
 import Libraries.Utils.String
 import Libraries.Utils.Hex
 import Libraries.Utils.Octal
-
-import Data.String
-import Libraries.Data.String.Extra
 
 %default total
 
@@ -18,11 +21,16 @@ data Token =
   IntegerLit Integer |
   StringLit String |
   -- Identifiers
-
+  HoleIdent String |
+  Ident String |
+  DotSepIdent (List1 String) |
+  DotIdent String |
+  Symbol String |
   -- Comments
   Comment String |
   DocComment String |
   -- Special
+  Keyword String |
   Unrecognised String
 
 Show Token where 
@@ -32,10 +40,16 @@ Show Token where
   show (IntegerLit x) = "integer " ++ show x
   show (StringLit x) = "string " ++ show x
   -- Identifiers
+  show (HoleIdent x) = "hole identifier " ++ show x 
+  show (Ident x) = "identifier " ++ x
+  show (DotSepIdent xs) = "namespaced identifier " ++ dotSep (forget $ reverse xs)
+  show (DotIdent x) = "dot identifier " ++ show x 
+  show (Symbol x) = "symbol " ++ x 
   -- Comments
-  show (Comment x) = "comment" ++ x
-  show (DocComment x) = "DocComment" ++ x
+  show (Comment x) = "comment " ++ x
+  show (DocComment x) = "doc comment " ++ x
   -- Special
+  show (Keyword x) = "keyword " ++ x
   show (Unrecognised x) = "Unrecognised " ++ x
 
 mutual
@@ -87,6 +101,12 @@ blockComment = is '{' <+> is '-' <+> toEndComment 1
 docComment : Lexer
 docComment = is '|' <+> is '|' <+> is '|' <+> many (isNot '\n')
 
+holeIdent : Lexer
+holeIdent = is '?' <+> identNormal
+
+dotIdent : Lexer
+dotIdent = is '.' <+> identNormal
+
 fromHexLit : String -> Integer
 fromHexLit str
   = if length str <= 2
@@ -110,6 +130,30 @@ doubleLit
     = digits <+> is '.' <+> digits <+> opt
           (is 'e' <+> opt (is '-' <|> is '+') <+> digits)
 
+keywords : List String
+keywords = ["data", "module", "where", "let", "pat", "in", "do", "record",
+            "auto", "default", "implicit", "mutual", "namespace",
+            "parameters", "with", "impossible", "case", "of",
+            "if", "then", "else", "forall", "rewrite",
+            "using", "interface", "implementation", "open", "import",
+            "public", "export", "private",
+            "infixl", "infixr", "infix", "prefix",
+            "total", "partial", "covering"]
+
+symbols : List String
+symbols
+  = [".(",
+     "@{",
+     "[|", "|]|",
+     "(", ")", "{", "}}", "}", "[", "]", ",", ";", "_",
+     "`(", "`{{", "`[", "`"]
+
+isOpChar : Char -> Bool
+isOpChar c = c `elem` (unpack ":!#$%&*+./<=>?@\\^|-~")
+
+validSymbol : Lexer
+validSymbol = some (pred isOpChar)
+
 rawToken : TokenMap Token
 rawToken = 
   [
@@ -122,8 +166,23 @@ rawToken =
     (digits, \x => IntegerLit (cast x)),
     (stringLit, \x => StringLit (stripQuotes x)),
     (charLit, \x => CharLit (stripQuotes x)),
-    (space, Comment)
+    (holeIdent, \x => HoleIdent (assert_total (strTail x))),
+    (dotIdent, \x => DotIdent (assert_total (strTail x))),
+    (namespaceIdent, parseNamespace),
+    (identNormal, parseIdent),
+    (space, Comment),
+    (validSymbol, Symbol),
+    (symbol, Unrecognised)
   ]
+
+  where
+    parseIdent : String -> Token
+    parseIdent x = if x `elem` keywords then Keyword x else Ident x
+
+    parseNamespace : String -> Token
+    parseNamespace ns = case List1.reverse . split (== '.') $ ns of
+                             (ident ::: []) => parseIdent ident
+                             ns => DotSepIdent ns
 
 export
 lexTo : String -> IO ()
