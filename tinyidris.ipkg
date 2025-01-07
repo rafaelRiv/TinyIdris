@@ -13,7 +13,9 @@ modules =
 	Libraries.Utils.Hex,
 	Libraries.Utils.Octal,
 	Parser.Lexer.Common,
+	Parser.Lexer.Package,
 	Parser.Lexer.Source,
+	Parser.Package,
 	Parser.Source
 sourcedir = "src"
 
