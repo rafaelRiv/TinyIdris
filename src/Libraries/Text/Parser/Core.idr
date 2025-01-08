@@ -2,7 +2,7 @@ module Libraries.Text.Parser.Core
 
 
 import Data.List
-import public Librairies.Control.Delayed
+import public Libraries.Control.Delayed
 
 %default total
 
