@@ -6,6 +6,7 @@ modules =
 	Libraries.Text.Lexer.Core,
 	Libraries.Text.Lexer,
 	Libraries.Text.Parser.Core,
+	Libraries.Text.Parser,
 	Libraries.Text.Token,
 	Libraries.Text.Quantity,
 	Libraries.Data.String.Extra,
