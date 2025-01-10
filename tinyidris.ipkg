@@ -3,7 +3,6 @@ package tinyidris
 main = Idris.Main
 modules =
 	Libraries.Control.Delayed,
-	Libraries.Text.Bounded,
 	Libraries.Text.Lexer.Core,
 	Libraries.Text.Lexer,
 	Libraries.Text.Parser.Core,
@@ -16,6 +15,8 @@ modules =
 	Parser.Lexer.Common,
 	Parser.Lexer.Package,
 	Parser.Lexer.Source,
+	Parser.Rule.Common,
+	Parser.Rule.Source,
 	Parser.Package,
 	Parser.Source
 sourcedir = "src"
