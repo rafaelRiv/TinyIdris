@@ -2,14 +2,17 @@ module Parser.Source
 
 import public Parser.Lexer.Source
 import public Parser.Rule.Source
+import Parser.Support
+
 import System.File
+import Libraries.Utils.Either
 
 runParser : (str: String) -> IO ()
 runParser str = do
   let (toks, (l,c,file)) = lexTo str
-  let parsed = parse prog toks
+  let parsed = mapError toGenericParsingError $ parse prog toks
   case parsed of
-       Left err => putStrLn "Error"
+       Left err => putStrLn $ show err
        Right (ty, _) => putStrLn $ show (ty*2)
 
 
