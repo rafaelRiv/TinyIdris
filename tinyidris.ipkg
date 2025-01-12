@@ -13,13 +13,15 @@ modules =
 	Libraries.Utils.String,
 	Libraries.Utils.Hex,
 	Libraries.Utils.Octal,
+	Libraries.Utils.Either,
 	Parser.Lexer.Common,
 	Parser.Lexer.Package,
 	Parser.Lexer.Source,
 	Parser.Rule.Common,
 	Parser.Rule.Source,
 	Parser.Package,
-	Parser.Source
+	Parser.Source,
+	Parser.Support
 sourcedir = "src"
 
 executable = "tinyidris"
