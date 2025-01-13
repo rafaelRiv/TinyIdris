@@ -3,7 +3,6 @@ module Libraries.Text.Lexer.Core
 import Data.List
 import Data.Maybe
 
-import public Libraries.Text.Bounded
 import public Libraries.Control.Delayed
 
 %default total
@@ -144,15 +143,29 @@ public export
 TokenMap : (tokenType : Type) -> Type
 TokenMap tokenType = List (Lexer, String -> tokenType)
 
-tokenise : (a -> Bool) ->
+||| A token, and the line and column where it was in the input
+public export
+record TokenData a where
+  constructor MkToken
+  line : Int
+  col : Int
+  endLine : Int
+  endCol : Int
+  tok : a
+
+export
+Show a => Show (TokenData a) where
+  show t = show (line t) ++ ":" ++ show (col t) ++ ":" ++ show (tok t)
+
+tokenise : (TokenData a -> Bool) ->
            (line : Int) -> (col : Int) ->
-           List (WithBounds a) -> TokenMap a ->
-           List Char -> (List (WithBounds a), (Int, Int, List Char))
+           List (TokenData a) -> TokenMap a ->
+           List Char -> (List (TokenData a), (Int, Int, List Char))
 tokenise pred line col acc tmap str
     = case getFirstToken tmap str of
            Just (tok, line', col', rest) =>
            -- assert total because getFirstToken must consume something
-               if pred tok.val
+               if pred tok
                   then (reverse acc, (line, col, []))
                   else assert_total (tokenise pred line' col' (tok :: acc) tmap rest)
            Nothing => (reverse acc, (line, col, str))
@@ -162,19 +175,19 @@ tokenise pred line col acc tmap str
 
     getCols : List Char -> Int -> Int
     getCols x c
-         = case span (/= '\n') x of
+         = case span (/= '\n') (reverse x) of
                 (incol, []) => c + cast (length incol)
                 (incol, _) => cast (length incol)
 
     getFirstToken : TokenMap a -> List Char ->
-                    Maybe (WithBounds a, Int, Int, List Char)
+                    Maybe (TokenData a, Int, Int, List Char)
     getFirstToken [] str = Nothing
     getFirstToken ((lex, fn) :: ts) str
         = case scan lex [] str of
                Just (tok, rest) =>
                  let line' = line + cast (countNLs tok)
                      col' = getCols tok col in
-                     Just (MkBounded (fn (fastPack (reverse tok))) False (MkBounds line col line' col'),
+                     Just (MkToken line col line' col' (fn (fastPack (reverse tok))),
                            line', col', rest)
                Nothing => getFirstToken ts str
 
@@ -183,14 +196,14 @@ tokenise pred line col acc tmap str
 ||| and the line, column, and remainder of the input at the first point in the
 ||| string where there are no recognised tokens.
 export
-lex : TokenMap a -> String -> (List (WithBounds a), (Int, Int, String))
+lex : TokenMap a -> String -> (List (TokenData a), (Int, Int, String))
 lex tmap str
     = let (ts, (l, c, str')) = tokenise (const False) 0 0 [] tmap (unpack str) in
           (ts, (l, c, fastPack str'))
 
 export
-lexTo : (a -> Bool) ->
-        TokenMap a -> String -> (List (WithBounds a), (Int, Int, String))
+lexTo : (TokenData a -> Bool) ->
+        TokenMap a -> String -> (List (TokenData a), (Int, Int, String))
 lexTo pred tmap str
     = let (ts, (l, c, str')) = tokenise pred 0 0 [] tmap (unpack str) in
           (ts, (l, c, fastPack str'))

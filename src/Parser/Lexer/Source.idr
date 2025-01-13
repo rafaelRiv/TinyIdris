@@ -36,6 +36,7 @@ data Token =
   Pragma String |
   Unrecognised String
 
+public export
 Show Token where 
   -- Literals
   show (CharLit x) = "character " ++ show x 
@@ -210,8 +211,6 @@ rawToken =
                              ns => DotSepIdent ns
 
 export
-lexTo : String -> IO ()
-lexTo str = do
-  let (toks, (l,c,file)) = lexTo (const False) rawToken str
-  putStrLn $ show toks
+lexTo : String -> ((List (TokenData Token)), (Int,Int,String))
+lexTo str = lexTo (const False) rawToken str
 
