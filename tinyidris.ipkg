@@ -22,7 +22,10 @@ modules =
 	Parser.Package,
 	Parser.Source,
 	Parser.Support,
-	TTImp.Parser
+	TTImp.Parser,
+	TTImp.TTImp,
+	Core.TT
+
 sourcedir = "src"
 
 executable = "tinyidris"
