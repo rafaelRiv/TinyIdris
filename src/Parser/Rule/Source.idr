@@ -1,7 +1,8 @@
 module Parser.Rule.Source
 
-import public Parser.Lexer.Source
+import Parser.Lexer.Source
 import public Parser.Rule.Common
+import public Parser.Support
 
 %default total
 
@@ -23,6 +24,7 @@ eoi
     isEOI EndInput = True
     isEOI _ = False
 
+export
 intLit : Rule Integer
 intLit = terminal "Expected integer literal"
                   (\x => case tok x of
@@ -130,14 +132,27 @@ blockEntry valid rule
          valid' <- terminator valid col
          pure (p,valid')
 
+blockEntries : ValidIndent -> (IndentInfo -> Rule ty) -> SourceEmptyRule (List ty)
+blockEntries valid rule
+    = do eoi; pure []
+    <|> do res <- blockEntry valid rule
+           ts <- blockEntries (snd res) rule
+           pure (fst res :: ts)
+    <|> pure []
 
+export
 nonEmptyBlock : (IndentInfo -> Rule ty) -> Rule (List ty)
 nonEmptyBlock item
-  = do symbol "{"
-       commit
-       pure []
+    = do symbol "{"
+         commit
+         res <- blockEntry AnyIndent item
+         ps <- blockEntries (snd res) item
+         symbol "}"
+         pure (fst res :: ps)
+  <|> do col <- column
+         res <- blockEntry (AtPos col) item
+         ps <- blockEntries (snd res) item
+         pure (fst res :: ps)
 
 
-public export
-prog : Rule Integer
-prog = intLit
+

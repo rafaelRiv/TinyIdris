@@ -1,5 +1,8 @@
 module TTImp.Parser
 
-prog : IO ()
-prog = pure ()
+import Parser.Source
+
+export
+prog : Rule (List Integer)
+prog = nonEmptyBlock (\x => intLit)
 

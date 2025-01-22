@@ -2,22 +2,21 @@ module Parser.Source
 
 import public Parser.Lexer.Source
 import public Parser.Rule.Source
-import Parser.Support
 
 import System.File
 import Libraries.Utils.Either
 
-runParser : (str: String) -> IO ()
-runParser str = do
+runParser : {e: _ } -> (str: String) -> Grammar (TokenData Token) e ty -> IO ()
+runParser str p = do
   let (toks, (l,c,file)) = lexTo str
-  let parsed = mapError toGenericParsingError $ parse prog toks
+  let parsed = mapError toGenericParsingError $ parse p toks
   case parsed of
        Left err => putStrLn $ show err
-       Right (ty, _) => putStrLn $ show (ty*2)
+       Right (ty, _) => putStrLn "Success"
 
 
-export parseFile : (fn : String) -> IO ()
-parseFile fn = do
+export parseFile : (fn : String) -> Rule ty -> IO ()
+parseFile fn p = do
     Right str <- readFile fn
         | Left err => putStrLn $ show err
-    runParser str
+    runParser str p
