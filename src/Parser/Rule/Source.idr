@@ -4,6 +4,8 @@ import Parser.Lexer.Source
 import public Parser.Rule.Common
 import public Parser.Support
 
+import Core.TT
+
 %default total
 
 public export 
@@ -31,6 +33,7 @@ intLit = terminal "Expected integer literal"
                           IntegerLit i => Just i
                           _ => Nothing)
 
+export
 symbol : String -> Rule ()
 symbol req
     = terminal ("Expect '" ++ req ++ "'")
@@ -38,6 +41,46 @@ symbol req
                           Symbol s => if s == req then Just ()
                                                   else Nothing
                           _ => Nothing)
+export
+keyword : String -> Rule ()
+keyword req
+    = terminal ("Expect '" ++ req ++ "'")
+               (\x => case tok x of
+                          Keyword s => if s == req then Just ()
+                                                   else Nothing
+                          _ => Nothing)
+
+export
+exactIdent : String -> Rule ()
+exactIdent req
+    = terminal ("Expect " ++ req)
+               (\x => case tok x of
+                          Ident s => if s == req then Just ()
+                                                 else Nothing
+                          _ => Nothing)
+
+export
+identPart : Rule String
+identPart
+    = terminal ("Expect name")
+               (\x => case tok x of
+                          Ident str => Just str
+                          _ => Nothing)
+export
+unqualifiedName : Rule String
+unqualifiedName = identPart
+
+export
+reservedNames : List String
+reservedNames 
+    = ["Type", "Int", "Integer", "Bits8", "Bits16", "Bits64",
+       "String", "Char", "Double", "Lazy", "Inf", "Force", "Delay"]
+
+export
+name : Rule Name
+name = do n <- unqualifiedName
+          pure (UN n)
+
 export
 IndentInfo : Type
 IndentInfo = Int
@@ -68,11 +111,6 @@ checkValid (AfterPos x) c = if c >= x
                               else fail "Invalid indentation"
 checkValid EndOfBlock c = fail "End of block"
 
-
-reservedNames : List String
-reservedNames 
-    = ["Type", "Int", "Integer", "Bits8", "Bits16", "Bits64",
-       "String", "Char", "Double", "Lazy", "Inf", "Force", "Delay"]
 
 ||| Any token which indicates the end of a statement/block
 isTerminator : Token -> Bool
