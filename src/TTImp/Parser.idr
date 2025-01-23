@@ -2,22 +2,27 @@ module TTImp.Parser
 
 import Core.TT
 import Parser.Source
-import TTImp.TTImp
+import public TTImp.TTImp
 
 public export
 FileName : Type
 FileName = String
 
-atom : FileName -> Rule String
+atom : FileName -> Rule RawImp
 atom fname 
     =  do exactIdent "Type"
-          pure "Not Ready"
+          pure IType
+    <|> do symbol "_"
+           pure Implicit
+    <|> do x <- name
+           pure (IVar x)
 
-{-
+bindSymbol : Rule PiInfo
+bindSymbol 
+    = do symbol "->"
+         pure Implicit
+
 typeExpr : FileName -> IndentInfo -> Rule RawImp
-typeExpr fname indent 
-      = do
-        -}
 
 dataDec : FileName -> IndentInfo -> Rule String
 dataDec fname indents
@@ -27,6 +32,6 @@ dataDec fname indents
         pure "Not Ready"
 
 export
-prog : Rule (List String)
-prog = nonEmptyBlock (\x => atom "Test")
+prog : FileName -> Rule (List RawImp)
+prog fname = nonEmptyBlock (\x => atom fname)
 

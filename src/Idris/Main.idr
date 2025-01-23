@@ -8,5 +8,5 @@ main : IO ()
 main = do 
     [_,fname] <- getArgs
         | _ => putStrLn "Usage: tinyidris <filename>"
-    parseFile fname prog
+    parseFile fname (prog fname)
 

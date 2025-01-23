@@ -36,4 +36,11 @@ public export
     IData : ImpData -> ImpDecl
     IDef : Name -> List ImpClause -> ImpDecl
 
+public export
+Show RawImp where
+  show IType = "IType"
+  show Implicit = "Implicit"
+  show (IVar _) = "Var"
+  show _ = "Not yet implemented"
+
 
