@@ -40,7 +40,7 @@ public export
 Show RawImp where
   show IType = "IType"
   show Implicit = "Implicit"
-  show (IVar _) = "Var"
+  show (IVar name) = "Var " ++ show name
   show _ = "Not yet implemented"
 
 

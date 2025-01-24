@@ -212,5 +212,6 @@ rawToken =
 
 export
 lexTo : String -> ((List (TokenData Token)), (Int,Int,String))
-lexTo str = lexTo (const False) rawToken str
+lexTo str = let (toks, (l,c,file))  = lexTo (const False) rawToken str
+            in (toks ++ [MkToken l c l c EndInput], (l,c,file))
 
