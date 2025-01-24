@@ -43,4 +43,8 @@ Show RawImp where
   show (IVar name) = "Var " ++ show name
   show _ = "Not yet implemented"
 
+public export
+Show ImpTy where
+  show (MkImpTy name imp) = show name ++ ":"  ++ show imp
+
 

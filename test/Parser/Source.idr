@@ -1,1 +1,1 @@
-Type;test;_
+test:Type;

@@ -30,7 +30,23 @@ bindList fname indents
                  ty <- pure Implicit
                  pure (UN n, ty))
 
-typeExpr : FileName -> IndentInfo -> Rule RawImp
+mutual
+  appExpr : FileName -> IndentInfo -> Rule RawImp
+  appExpr fname indents
+    = do f <- simpleExpr fname indents
+         pure f
+
+  simpleExpr : FileName -> IndentInfo -> Rule RawImp
+  simpleExpr fname indents
+    = atom fname
+
+  expr : FileName -> IndentInfo -> Rule RawImp
+  expr = typeExpr
+
+  typeExpr : FileName -> IndentInfo -> Rule RawImp
+  typeExpr fname indents
+        = do arg <- appExpr fname indents
+             pure arg
 
 forall_ : FileName -> IndentInfo -> Rule RawImp
 
@@ -43,7 +59,15 @@ dataDec fname indents
         symbol ":"
         pure "Not Ready"
 
+tyDec : FileName -> IndentInfo -> Rule ImpTy
+tyDec fname indents
+   = do n <- name
+        symbol ":"
+        ty <- expr fname indents
+        atEnd indents
+        pure (MkImpTy n ty)
+
 export
-prog : FileName -> Rule (List RawImp)
-prog fname = nonEmptyBlock (\x => atom fname)
+prog : FileName -> Rule (List ImpTy)
+prog fname = nonEmptyBlock (tyDec fname)
 

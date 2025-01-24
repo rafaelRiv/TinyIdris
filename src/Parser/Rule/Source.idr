@@ -127,6 +127,17 @@ isTerminator (Symbol "where") = True
 isTerminator EndInput = True
 isTerminator _ = False
 
+export
+atEnd : (indent: IndentInfo) -> SourceEmptyRule ()
+atEnd indent
+  = eoi
+  <|> do nextIs "Expected end of block" (isTerminator . tok)
+         pure ()
+  <|> do col <- Common.column
+         if (col <= indent)
+            then pure ()
+            else fail "Not the end of a block entry"
+
 -- Parse a terminator, return where the next block entry
 -- must start, given where the current block enty started
 terminator : ValidIndent -> Int -> SourceEmptyRule ValidIndent
