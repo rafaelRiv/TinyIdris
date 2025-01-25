@@ -83,7 +83,14 @@ dataDec fname indents
         cs <- block (tyDec fname)
         pure (MkImpData n ty cs)
 
+topDecl : FileName -> IndentInfo -> Rule ImpDecl
+topDecl fname indents
+    = do dat <- dataDec fname indents
+         pure (IData dat)
+  <|> do claim <- tyDec fname indents
+         pure (IClaim claim)
+
 export
-prog : FileName -> Rule (List ImpData)
-prog fname = nonEmptyBlock (dataDec fname)
+prog : FileName -> Rule (List ImpDecl)
+prog fname = nonEmptyBlock (topDecl fname)
 

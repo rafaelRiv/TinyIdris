@@ -52,6 +52,12 @@ public export
 Show ImpData where
   show (MkImpData name tycon datacons) = show name ++ " "  ++ show tycon ++ " " ++ show datacons
 
+public export
+Show ImpDecl where
+  show (IClaim impTy) = "IClaim " ++ show impTy
+  show (IData iDef) = "IData" ++ show iDef
+  show _ = "Not yet implemented"
+
 
 
 
