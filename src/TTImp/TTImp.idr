@@ -48,4 +48,10 @@ public export
 Show ImpTy where
   show (MkImpTy name imp) = show name ++ ":"  ++ show imp
 
+public export
+Show ImpData where
+  show (MkImpData name tycon datacons) = show name ++ " "  ++ show tycon ++ " " ++ show datacons
+
+
+
 

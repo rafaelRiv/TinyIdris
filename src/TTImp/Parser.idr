@@ -65,13 +65,6 @@ forall_ : FileName -> IndentInfo -> Rule RawImp
 
 binder : FileName -> IndentInfo -> Rule RawImp
 
-dataDec : FileName -> IndentInfo -> Rule String
-dataDec fname indents
-   = do keyword "data"
-        n <- name
-        symbol ":"
-        pure "Not Ready"
-
 tyDec : FileName -> IndentInfo -> Rule ImpTy
 tyDec fname indents
    = do n <- name
@@ -80,7 +73,17 @@ tyDec fname indents
         atEnd indents
         pure (MkImpTy n ty)
 
+dataDec : FileName -> IndentInfo -> Rule ImpData
+dataDec fname indents
+   = do keyword "data"
+        n <- name
+        symbol ":"
+        ty <- expr fname indents
+        keyword "where"
+        cs <- block (tyDec fname)
+        pure (MkImpData n ty cs)
+
 export
-prog : FileName -> Rule (List ImpTy)
-prog fname = nonEmptyBlock (tyDec fname)
+prog : FileName -> Rule (List ImpData)
+prog fname = nonEmptyBlock (dataDec fname)
 

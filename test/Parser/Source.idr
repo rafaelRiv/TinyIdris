@@ -1,2 +1,2 @@
-test : Type -> Type -> Type
-test : Type -> Type -> Type
+data Test : Type -> Type -> Type where
+  MkImpTy : Test -> Test

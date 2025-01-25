@@ -185,7 +185,6 @@ terminator valid laststart
                then pure AnyIndent
                else fail "Not the end of a block entry"
       afterDedent EndOfBlock col = pure EndOfBlock
-      
 
 blockEntry : ValidIndent -> (IndentInfo -> Rule ty) -> Rule (ty,ValidIndent)
 blockEntry valid rule
@@ -202,6 +201,17 @@ blockEntries valid rule
            ts <- blockEntries (snd res) rule
            pure (fst res :: ts)
     <|> pure []
+
+export
+block : (IndentInfo -> Rule ty) -> SourceEmptyRule (List ty)
+block item
+    = do symbol "{"
+         commit
+         ps <- blockEntries AnyIndent item
+         symbol "}"
+         pure ps
+  <|> do col <- column
+         blockEntries (AtPos col) item
 
 export
 nonEmptyBlock : (IndentInfo -> Rule ty) -> Rule (List ty)
