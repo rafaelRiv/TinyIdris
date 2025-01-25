@@ -213,5 +213,11 @@ rawToken =
 export
 lexTo : String -> ((List (TokenData Token)), (Int,Int,String))
 lexTo str = let (toks, (l,c,file))  = lexTo (const False) rawToken str
-            in (toks ++ [MkToken l c l c EndInput], (l,c,file))
+            in ((filter notComment toks) ++ [MkToken l c l c EndInput], (l,c,file))
+
+    where
+      notComment : TokenData Token -> Bool
+      notComment t = case tok t of
+                        Comment _ => False
+                        _ => True
 
