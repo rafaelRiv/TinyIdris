@@ -41,6 +41,7 @@ Show RawImp where
   show IType = "IType"
   show Implicit = "Implicit"
   show (IVar name) = "Var " ++ show name
+  show (IPi info name arg scope) = "IPi " ++ show info ++ " " ++ show arg ++ " " ++ " " ++ show scope
   show _ = "Not yet implemented"
 
 public export

@@ -15,3 +15,8 @@ data PiInfo : Type where
   Implicit : PiInfo
   Explicit : PiInfo
 
+public export
+Show PiInfo where
+  show Implicit = "Implicit"
+  show Explicit = "Explicit"
+
