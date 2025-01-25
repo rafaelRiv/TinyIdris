@@ -1,6 +1,7 @@
 module TTImp.Parser
 
 import Core.TT
+import public Libraries.Text.Parser
 import Parser.Source
 import public TTImp.TTImp
 
@@ -46,7 +47,19 @@ mutual
   typeExpr : FileName -> IndentInfo -> Rule RawImp
   typeExpr fname indents
         = do arg <- appExpr fname indents
-             pure arg
+             (do continue indents
+                 rest <- some (do exp <- bindSymbol
+                                  op <- appExpr fname indents
+                                  pure (exp,op))
+                 pure (mkPi arg rest))
+              <|> pure arg
+
+        where
+          mkPi : RawImp -> List (PiInfo, RawImp) -> RawImp
+          mkPi arg [] = arg
+          mkPi arg ((exp, a) :: as)
+                = IPi exp Nothing arg (mkPi a as)
+
 
 forall_ : FileName -> IndentInfo -> Rule RawImp
 

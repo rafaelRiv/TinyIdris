@@ -85,6 +85,20 @@ export
 IndentInfo : Type
 IndentInfo = Int
 
+continueF : SourceEmptyRule () -> (indent : IndentInfo) -> SourceEmptyRule ()
+continueF err indent 
+    = do eoi; err
+  <|> do keyword "where"; err
+  <|> do col <- Common.column
+         if col <= indent
+            then err
+            else pure ()
+
+export
+continue : (indent : IndentInfo) -> SourceEmptyRule ()
+continue = continueF (fail "Unexpected end of expression")
+
+
 data ValidIndent = 
   ||| in {}, enties can begin in any column
   AnyIndent |

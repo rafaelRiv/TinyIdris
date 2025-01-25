@@ -1,1 +1,1 @@
-test:Type;
+test:Type->Type;
