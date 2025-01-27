@@ -98,6 +98,12 @@ export
 continue : (indent : IndentInfo) -> SourceEmptyRule ()
 continue = continueF (fail "Unexpected end of expression")
 
+export
+mustContinue : (indent : IndentInfo) -> Maybe String -> SourceEmptyRule ()
+mustContinue indent Nothing = 
+    continueF (fatalError "Unexpedted end of expression") indent
+mustContinue indent (Just req) = 
+    continueF (fatalError ("Unexpedted '" ++ req ++  "'")) indent
 
 data ValidIndent = 
   ||| in {}, enties can begin in any column

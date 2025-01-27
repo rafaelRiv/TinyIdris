@@ -1,4 +1,2 @@
-data Test : Type -> Type -> Type where
-  MkImpTy : Test -> Test
-
-name : Type -> Type
+plus : Nat -> Nat -> Nat
+pat y : Nat
