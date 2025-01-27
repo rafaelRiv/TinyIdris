@@ -21,7 +21,7 @@ data ImpTy : Type where
 
 public export
 data ImpClause : Type where
-  MkImpClause : (lhs : RawImp) -> (rhs : RawImp) -> ImpClause
+  PatClause : (lhs : RawImp) -> (rhs : RawImp) -> ImpClause
 
 public export
 data ImpData : Type where

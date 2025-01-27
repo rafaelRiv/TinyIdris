@@ -104,12 +104,38 @@ dataDec fname indents
         cs <- block (tyDec fname)
         pure (MkImpData n ty cs)
 
+parseRHS : FileName -> IndentInfo -> RawImp ->
+           Rule (Name, ImpClause)
+parseRHS fname indents lhs
+  = do symbol "="
+       commit
+       rhs <- expr fname indents
+       atEnd indents
+       pure (!(getFn lhs), PatClause lhs rhs)
+    where
+      getFn : RawImp -> SourceEmptyRule Name
+      getFn (IVar n) = pure n
+      getFn (IApp f a) = getFn f
+      getFn (IPatvar _ _ sc) = getFn sc
+      getFn _ = fail "Not a function application"
+
+clause : FileName -> IndentInfo -> Rule (Name, ImpClause)
+clause fname indents
+    = do lhs <- expr fname indents
+         parseRHS fname indents lhs
+
+definition : FileName -> IndentInfo -> Rule ImpDecl
+definition fname indents
+    = do nd <- clause fname indents
+         pure (IDef (fst nd) [snd nd])
+
 topDecl : FileName -> IndentInfo -> Rule ImpDecl
 topDecl fname indents
     = do dat <- dataDec fname indents
          pure (IData dat)
   <|> do claim <- tyDec fname indents
          pure (IClaim claim)
+  <|> do definition fname indents
 
 export
 prog : FileName -> Rule (List ImpDecl)
