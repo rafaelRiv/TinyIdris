@@ -18,6 +18,10 @@ atom fname
     <|> do x <- name
            pure (IVar x)
 
+getRight : Either a b -> Maybe b
+getRight (Left _) = Nothing
+getRight (Right v) = Just v
+
 bindSymbol : Rule PiInfo
 bindSymbol 
     = do symbol "->"
@@ -27,11 +31,22 @@ mutual
   appExpr : FileName -> IndentInfo -> Rule RawImp
   appExpr fname indents
     = do f <- simpleExpr fname indents
-         pure f
+         args <- many (argExpr fname indents)
+         pure (apply f args)
+
+  argExpr : FileName -> IndentInfo -> Rule RawImp
+  argExpr fname indents
+      = do continue indents
+           simpleExpr fname indents
 
   simpleExpr : FileName -> IndentInfo -> Rule RawImp
   simpleExpr fname indents
-    = atom fname <|> binder fname indents
+      = atom fname 
+    <|> binder fname indents
+    <|> do symbol "("
+           e <- expr fname indents
+           symbol ")"
+           pure e
 
   expr : FileName -> IndentInfo -> Rule RawImp
   expr = typeExpr

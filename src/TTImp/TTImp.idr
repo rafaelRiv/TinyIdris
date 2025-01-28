@@ -36,6 +36,11 @@ public export
     IData : ImpData -> ImpDecl
     IDef : Name -> List ImpClause -> ImpDecl
 
+export
+apply : RawImp -> List RawImp -> RawImp
+apply f [] = f
+apply f (x :: xs) = apply (IApp f x) xs
+
 public export
 Show RawImp where
   show IType = "IType"
