@@ -27,13 +27,6 @@ eoi
     isEOI _ = False
 
 export
-intLit : Rule Integer
-intLit = terminal "Expected integer literal"
-                  (\x => case tok x of
-                          IntegerLit i => Just i
-                          _ => Nothing)
-
-export
 symbol : String -> Rule ()
 symbol req
     = terminal ("Expect '" ++ req ++ "'")
@@ -69,12 +62,6 @@ identPart
 export
 unqualifiedName : Rule String
 unqualifiedName = identPart
-
-export
-reservedNames : List String
-reservedNames 
-    = ["Type", "Int", "Integer", "Bits8", "Bits16", "Bits64",
-       "String", "Char", "Double", "Lazy", "Inf", "Force", "Delay"]
 
 export
 name : Rule Name
