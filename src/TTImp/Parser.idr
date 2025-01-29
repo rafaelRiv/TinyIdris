@@ -7,6 +7,13 @@ import public TTImp.TTImp
 
 %default covering
 
+%hide Prelude.(>>=)
+%hide Prelude.(>>)
+%hide Prelude.pure
+
+%hide Lexer.Core.(<|>)
+%hide Prelude.(<|>)
+
 public export
 FileName : Type
 FileName = String
@@ -167,7 +174,6 @@ mutual
         bindAll ((n,ty) :: rest) scope
               = IPatvar n ty (bindAll rest scope)
 
-
   binder : FileName -> IndentInfo -> Rule RawImp
   binder fname indents
       = forall_ fname indents
@@ -227,7 +233,28 @@ topDecl fname indents
          pure (IClaim claim)
   <|> do definition fname indents
 
+collectDefs : List ImpDecl -> List ImpDecl
+collectDefs [] = []
+collectDefs (IDef fn cs :: ds)
+    = let (cs', rest) = spanMap (isClause fn) ds in
+          IDef fn (cs ++ cs') :: assert_total (collectDefs rest)
+  where
+    spanMap : (a -> Maybe (List b)) -> List a -> (List b, List a)
+    spanMap f [] = ([], [])
+    spanMap f (x :: xs) = case f x of
+                               Nothing => ([], x :: xs)
+                               Just y => case spanMap f xs of
+                                              (ys, zs) => (y ++ ys, zs)
+
+    isClause : Name -> ImpDecl -> Maybe (List ImpClause)
+    isClause n (IDef n' cs)
+        = if n == n' then Just cs else Nothing
+    isClause n _ = Nothing
+collectDefs (d :: ds)
+    = d :: collectDefs ds
+
 export
 prog : FileName -> Rule (List ImpDecl)
-prog fname = nonEmptyBlock (topDecl fname)
+prog fname = do ds <- nonEmptyBlock (topDecl fname)
+                pure (collectDefs ds)
 
