@@ -2,6 +2,7 @@ module Idris.Main
 
 import Parser.Source
 import TTImp.Parser
+import Core.Core
 import System
 
 main : IO ()
