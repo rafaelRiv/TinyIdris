@@ -211,9 +211,10 @@ rawToken =
                              ns => DotSepIdent ns
 
 export
-lexTo : String -> ((List (TokenData Token)), (Int,Int,String))
-lexTo str = let (toks, (l,c,file))  = lexTo (const False) rawToken str
-            in ((filter notComment toks) ++ [MkToken l c l c EndInput], (l,c,file))
+lexTo : String -> Either (Int,Int,String) (List (TokenData Token))
+lexTo str = case lexTo (const False) rawToken str of
+                 (toks, (l,c,"")) => Right (filter notComment toks ++ [MkToken l c l c EndInput])
+                 (_, fail) => Left fail
 
     where
       notComment : TokenData Token -> Bool
