@@ -14,7 +14,6 @@ runParser str p = do
        Left err => putStrLn $ show err
        Right (ty, _) => putStrLn $ show ty
 
-
 export parseFile : Show ty => (fn : String) -> Rule ty -> IO ()
 parseFile fn p = do
     Right str <- readFile fn
