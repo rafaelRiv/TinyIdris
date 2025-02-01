@@ -1,5 +1,7 @@
 module Core.Core
 
+import public Data.IORef
+
 export
 data Error : Type where
   GenericMsg : String -> Error
@@ -52,4 +54,9 @@ pure x = MkCore (pure (pure x))
 export
 (<*>) : Core (a -> b) -> Core a -> Core b
 (<*>) (MkCore f) (MkCore a) = MkCore [| f <*> a |]
+
+export
+data Ref : (l : label) -> Type -> Type where
+      [search l]
+      MkRef : IORef a -> Ref x a
   
