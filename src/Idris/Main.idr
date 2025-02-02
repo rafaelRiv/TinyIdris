@@ -14,6 +14,7 @@ main = do
         | _ => putStrLn "Usage: tinyidris <filename>"
     Right decls <- parseFile fname (prog fname)
       | Left err => printLn err
+    printLn decls
     coreRun runMain
             (\err => printLn err)
             pure
