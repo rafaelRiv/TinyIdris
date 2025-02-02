@@ -1,7 +1,11 @@
 module TTImp.Elab.Term
 
 import Core.Core
+import Core.Context
+import Core.Env
+import Core.Normalise
 import Core.TT
+import Core.UnifyState
 
 import TTImp.TTImp
 
