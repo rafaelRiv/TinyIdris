@@ -1,5 +1,6 @@
 module Core.Context
 
+import Core.Core
 import Core.TT
 import Core.CaseTree
 
@@ -28,3 +29,7 @@ Defs = SortedMap Name GlobalDef
 
 export
 data Ctxt : Type where
+
+export
+initDefs : Core Defs
+initDefs = pure empty

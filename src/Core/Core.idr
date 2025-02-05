@@ -20,6 +20,12 @@ coreRun : Core a -> (Error -> IO b) -> (a -> IO b) -> IO b
 coreRun (MkCore act) err ok
     = either err ok !act
 
+export
+%inline
+coreLift : IO a -> Core a
+coreLift op = MkCore (do op' <- op
+                         pure (Right op'))
+
 export %inline
 map : (a -> b) -> Core a -> Core b
 map f (MkCore a) = MkCore (map (map f) a)
@@ -56,7 +62,20 @@ export
 (<*>) (MkCore f) (MkCore a) = MkCore [| f <*> a |]
 
 export
+traverse_ : (a -> Core ()) -> List a -> Core ()
+traverse_ f [] = pure ()
+traverse_ f (x :: xs)
+    = do f x
+         traverse_ f xs
+
+export
 data Ref : (l : label) -> Type -> Type where
       [search l]
       MkRef : IORef a -> Ref x a
+
+export
+newRef : (x : label) -> t -> Core (Ref x t)
+newRef x val
+  = do ref <- coreLift (newIORef val)
+       pure (MkRef ref)
   

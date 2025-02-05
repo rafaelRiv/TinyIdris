@@ -23,4 +23,7 @@ checkTerm : {vars : _} ->
             {auto c : Ref Ctxt Defs} ->
             {auto u : Ref UST UState} ->
             Env Term vars -> RawImp -> Maybe (Glued vars) ->
-            Core (Term vars, Glued vars)
+            Core ()
+          --  Core (Term vars, Glued vars)
+checkTerm env (IVar n) exp = pure ()
+checkTerm env imp exp = pure ()

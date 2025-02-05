@@ -11,6 +11,19 @@ Eq Name where
   (==) (MN x i) (MN y j) = i == j && x == y
   (==) _ _ = False
 
+nameTag : Name -> Int
+nameTag (UN _) = 0
+nameTag (MN _ _) = 1
+
+export
+Ord Name where
+  compare (UN x) (UN y) = compare x y
+  compare (MN x i) (MN y j)
+      = case compare x y of
+             EQ => compare i j
+             t => t
+  compare x y = compare (nameTag x) (nameTag y)
+
 public export
 Show Name where
   show (UN name) = name
