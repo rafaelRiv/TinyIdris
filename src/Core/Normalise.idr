@@ -9,3 +9,7 @@ public export
 data Glued : List Name -> Type where
   MkGlue : Core (Term vars) ->
            (Ref Ctxt Defs -> Core (NF vars)) -> Glued vars
+
+export
+gType : Glued vars
+gType = MkGlue (pure TType) (const (pure NType))
