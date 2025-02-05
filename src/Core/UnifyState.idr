@@ -31,3 +31,7 @@ record UState where
 
 export
 data UST : Type where
+
+export
+initUState : UState
+initUState = MkUState empty empty empty 0 0

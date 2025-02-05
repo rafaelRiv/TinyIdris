@@ -25,4 +25,5 @@ checkTerm : {vars : _} ->
             Env Term vars -> RawImp -> Maybe (Glued vars) ->
             Core ()
           --  Core (Term vars, Glued vars)
+checkTerm env (IVar n) exp = pure ()
 checkTerm env imp exp = pure ()
