@@ -33,4 +33,5 @@ checkTerm env (IVar n) exp =
                Just gdef <- lookupDef n defs
                   | Nothing => coreLift $ putStrLn "Undefined Name" 
                coreLift $ putStrLn "Not defined"
+checkTerm env IType exp = pure ()
 checkTerm env imp exp = pure ()
