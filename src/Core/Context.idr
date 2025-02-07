@@ -28,6 +28,10 @@ Defs : Type
 Defs = SortedMap Name GlobalDef
 
 export
+lookupDef : Name -> Defs -> Core (Maybe GlobalDef)
+lookupDef n defs = pure (SortedMap.lookup n defs)
+
+export
 data Ctxt : Type where
 
 export

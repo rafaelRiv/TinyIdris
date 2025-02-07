@@ -78,4 +78,8 @@ newRef : (x : label) -> t -> Core (Ref x t)
 newRef x val
   = do ref <- coreLift (newIORef val)
        pure (MkRef ref)
+
+export %inline
+get : (x : label) -> {auto ref : Ref x a} -> Core a
+get x {ref = MkRef io} = coreLift (readIORef io)
   

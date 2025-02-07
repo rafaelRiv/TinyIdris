@@ -1,9 +1,23 @@
 module Core.TT
 
+import Decidable.Equality
+
 public export
 data Name : Type where
   UN : String -> Name -- user written name
   MN : String -> Int -> Name
+
+export
+nameEq : (x : Name) -> (y : Name) -> Maybe (x = y)
+nameEq (UN x) (UN y) with (decEq x y)
+  nameEq (UN y) (UN y) | (Yes Refl) = Just Refl
+  nameEq (UN x) (UN y) | (No contra) = Nothing
+nameEq (MN x t) (MN x' t') with (decEq x x')
+  nameEq (MN x t) (MN x t') | (Yes Refl) with (decEq t t')
+    nameEq (MN x t) (MN x t) | (Yes Refl) | (Yes Refl) = Just Refl
+    nameEq (MN x t) (MN x t') | (Yes Refl) | (No contra) = Nothing
+  nameEq (MN x t) (MN x' t') | (No contra) = Nothing
+nameEq _ _ = Nothing
 
 export
 Eq Name where
