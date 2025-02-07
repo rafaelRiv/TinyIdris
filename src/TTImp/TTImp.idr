@@ -60,7 +60,7 @@ Show ImpData where
 public export
 Show ImpDecl where
   show (IClaim impTy) = "IClaim " ++ show impTy
-  show (IData iDef) = "IData" ++ show iDef
+  show (IData iDef) = "IData " ++ show iDef
   show _ = "Not yet implemented"
 
 
