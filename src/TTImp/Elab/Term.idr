@@ -25,5 +25,12 @@ checkTerm : {vars : _} ->
             Env Term vars -> RawImp -> Maybe (Glued vars) ->
             Core ()
           --  Core (Term vars, Glued vars)
-checkTerm env (IVar n) exp = pure ()
+checkTerm env (IVar n) exp =
+    case defined n env of
+         (Just (MkIsDefined p)) => coreLift $ putStrLn "Defined"
+         Nothing =>
+            do defs <- get Ctxt
+               Just gdef <- lookupDef n defs
+                  | Nothing => coreLift $ putStrLn "Undefined Name" 
+               coreLift $ putStrLn "Not defined"
 checkTerm env imp exp = pure ()
