@@ -15,4 +15,16 @@ processData : {auto c : Ref Ctxt Defs} ->
               {auto u : Ref UST UState} ->
               ImpData -> Core ()
 processData (MkImpData n tycon datacons) = do
+  -- Check tycon
   checkTerm [] tycon (Just gType)
+
+  {- TODO
+
+  * Get arity
+  * Add def n
+  * check datacons
+  * add cons to def
+
+  -}
+
+
