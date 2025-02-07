@@ -4,12 +4,12 @@ import Core.TT
 
 import public Data.IORef
 
-export
+public export
 data Error : Type where
   GenericMsg : String -> Error
   UndefinedName : Name -> Error
 
-export
+public export
 Show Error where
   show (GenericMsg str) = str
   show (UndefinedName x) = "Undefined name " ++ show x
