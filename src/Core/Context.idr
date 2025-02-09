@@ -6,6 +6,8 @@ import Core.CaseTree
 
 import Data.SortedMap
 
+import System
+
 public export
 data Def : Type where
     None : Def -- Not yet defined
@@ -24,6 +26,10 @@ record GlobalDef where
   definition : Def
 
 export
+newDef : Term [] -> Def -> GlobalDef
+newDef ty d = MkGlobalDef ty d
+
+export
 Defs : Type
 Defs = SortedMap Name GlobalDef
 
@@ -37,3 +43,21 @@ data Ctxt : Type where
 export
 initDefs : Core Defs
 initDefs = pure empty
+
+-- Add (or replace) a definition
+
+export
+addDef : {auto c : Ref Ctxt Defs} ->
+         Name  -> GlobalDef -> Core ()
+addDef n d
+  = do defs <- get Ctxt
+       put Ctxt (insert n d defs)
+
+export
+updateDef : {auto c : Ref Ctxt Defs} ->
+            Name -> (GlobalDef -> GlobalDef) -> Core ()
+updateDef n upd
+    = do defs <- get Ctxt
+         Just gdef <- lookupDef n defs
+            | Nothing => throw (UndefinedName n)
+         addDef n (upd gdef)

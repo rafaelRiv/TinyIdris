@@ -14,4 +14,7 @@ export
 processType : {auto c : Ref Ctxt Defs} ->
               {auto u : Ref UST UState} ->
               Name -> RawImp -> Core ()
-processType n ty = checkTerm [] ty (Just gType)
+processType n ty 
+  = do
+      (tychk, _) <- checkTerm [] ty (Just gType)
+      addDef n (newDef tychk None)
