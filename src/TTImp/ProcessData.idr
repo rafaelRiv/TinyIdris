@@ -17,7 +17,10 @@ processData : {auto c : Ref Ctxt Defs} ->
 processData (MkImpData n tycon datacons) = do
   -- Check tycon
   checkTerm [] tycon (Just gType)
-
+  -- Add it to the context before checking data constructors
+  -- Exercise: We should also check whether it't already defined!
+  defs <- get Ctxt
+  pure ()
   {- TODO
 
   * Get arity
