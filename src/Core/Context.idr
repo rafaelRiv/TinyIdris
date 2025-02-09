@@ -26,6 +26,10 @@ record GlobalDef where
   definition : Def
 
 export
+newDef : Term [] -> Def -> GlobalDef
+newDef ty d = MkGlobalDef ty d
+
+export
 Defs : Type
 Defs = SortedMap Name GlobalDef
 

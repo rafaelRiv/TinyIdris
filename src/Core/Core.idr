@@ -85,6 +85,16 @@ Catchable Core Error where
                          Right val => pure (Right val))
   throw = coreFail
 
+  -- Traversable (specialised)
+traverse' : (a -> Core b) -> List a -> List b -> Core (List b)
+traverse' f [] acc = pure (reverse acc)
+traverse' f (x :: xs) acc
+    = traverse' f xs (!(f x) :: acc)
+
+export
+traverse : (a -> Core b) -> List a -> Core (List b)
+traverse f xs = traverse' f xs []
+
 export
 traverse_ : (a -> Core ()) -> List a -> Core ()
 traverse_ f [] = pure ()
