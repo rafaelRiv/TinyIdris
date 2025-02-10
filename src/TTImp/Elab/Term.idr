@@ -17,6 +17,8 @@ checkExp : {vars : _} ->
            (got : Glued vars) ->
            (expected : Maybe (Glued vars)) ->
            Core (Term vars, Glued vars)
+checkExp env term got Nothing = pure (term, got)
+checkExp env term got (Just exp) = pure (term,exp)
 
 export
 checkTerm : {vars : _} ->
@@ -26,7 +28,11 @@ checkTerm : {vars : _} ->
             Core (Term vars, Glued vars)
 checkTerm env (IVar n) exp =
     case defined n env of
-         (Just (MkIsDefined p)) => pure (TType,gType)
+         (Just (MkIsDefined p)) => 
+            let binder = getBinder p env in
+                checkExp env (Local _ p)
+                              (gnf env (binderType binder))
+                              exp
          Nothing =>
             do defs <- get Ctxt
                Just gdef <- lookupDef n defs
