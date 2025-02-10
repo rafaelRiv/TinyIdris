@@ -55,6 +55,19 @@ data IsVar : Name -> Nat -> List Name -> Type where
   First : IsVar n Z (n :: ns)
   Later : IsVar n i ns -> IsVar n (S i) (m :: ns)
 
+public export
+data NVar : Name -> List Name -> Type where
+     MkNVar : {i : Nat} -> (0 p : IsVar n i vars) -> NVar n vars
+
+export
+weakenNVar : (ns : List Name) ->
+             {idx : Nat} -> (0 p : IsVar name idx inner) ->
+             NVar name (ns ++ inner)
+weakenNVar [] x = MkNVar x
+weakenNVar (y :: xs) x
+   = let MkNVar x' = weakenNVar xs x in
+         MkNVar (Later x')
+
 public export 
 data PiInfo : Type where
   Implicit : PiInfo
@@ -73,6 +86,20 @@ data Binder : Type -> Type where
   PVar : ty -> Binder ty
   PVTy : ty -> Binder ty
 
+export
+binderType : Binder tm -> tm
+binderType (Lam x ty) = ty
+binderType (Pi x ty) = ty
+binderType (PVar ty) = ty
+binderType (PVTy ty) = ty
+
+export
+Functor Binder where
+  map func (Lam x ty) = Lam x (func ty)
+  map func (Pi x ty) = Pi x (func ty)
+  map func (PVar ty) = PVar (func ty)
+  map func (PVTy ty) = PVTy (func ty)
+
 public export
 data Term : List Name -> Type where
   Local : (idx : Nat) ->
@@ -87,5 +114,50 @@ data Term : List Name -> Type where
   App : Term vars -> Term vars -> Term vars
   TType : Term vars
   Erased : Term vars
+
+public export
+interface Weaken (0 tm : List Name -> Type) where
+  weaken : {n,vars : _} -> tm vars -> tm (n :: vars)
+  weakenNs : {vars : _} -> (ns : List Name) -> tm vars -> tm (ns ++ vars)
+
+  weakenNs [] t = t
+  weakenNs (n :: ns) t = weaken (weakenNs ns t)
+
+  weaken = weakenNs [_]
+
+export
+insertNVarNames : {outer, ns : _} ->
+                  (idx : Nat) ->
+                  (0 p : IsVar name idx (outer ++ inner)) ->
+                  NVar name (outer ++ (ns ++ inner))
+insertNVarNames {ns} {outer = []} idx prf = weakenNVar ns prf
+insertNVarNames {outer = (y :: xs)} Z First = MkNVar First
+insertNVarNames {ns} {outer = (y :: xs)} (S i) (Later x)
+    = let MkNVar prf = insertNVarNames {ns} i x in
+          MkNVar (Later prf)
+
+export
+insertNames : {outer, inner : _} ->
+              (ns : List Name) -> Term (outer ++ inner) ->
+              Term (outer ++ (ns ++ inner))
+insertNames ns (Local idx prf)
+    = let MkNVar prf' = insertNVarNames {ns} idx prf in
+          Local _ prf'
+insertNames ns (Ref nt name) = Ref nt name
+insertNames ns (Meta name args)
+    = Meta name (map (insertNames ns) args)
+insertNames {outer} {inner} ns (Bind x b scope)
+    = Bind x (assert_total (map (insertNames ns) b))
+           (insertNames {outer = x :: outer} {inner} ns scope)
+insertNames ns (App fn arg)
+    = App (insertNames ns fn) (insertNames ns arg)
+insertNames ns Erased = Erased
+insertNames ns TType = TType
+
+export
+Weaken Term where
+  weakenNs ns tm = insertNames {outer = []} ns tm
+
+
 
 
