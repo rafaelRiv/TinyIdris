@@ -4,8 +4,9 @@ import Core.TT
 import Data.List
 
 {-
-  Explain env and give an example of usage
+  Env is a list of binders and their environment
 -}
+
 public export
 data Env : (tm : List Name -> Type) -> List Name -> Type where
   Nil : Env tm []
