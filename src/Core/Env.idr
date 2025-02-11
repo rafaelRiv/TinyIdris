@@ -3,6 +3,9 @@ module Core.Env
 import Core.TT
 import Data.List
 
+{-
+  Explain env and give an example of usage
+-}
 public export
 data Env : (tm : List Name -> Type) -> List Name -> Type where
   Nil : Env tm []
