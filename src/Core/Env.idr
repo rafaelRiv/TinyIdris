@@ -3,6 +3,10 @@ module Core.Env
 import Core.TT
 import Data.List
 
+{-
+  Env is a list of binders and their environment
+-}
+
 public export
 data Env : (tm : List Name -> Type) -> List Name -> Type where
   Nil : Env tm []
