@@ -3,10 +3,7 @@ module Core.Env
 import Core.TT
 import Data.List
 
-{-
-  Env is a list of binders and their environment
--}
-
+-- Environment containing types and values of local variables
 public export
 data Env : (tm : List Name -> Type) -> List Name -> Type where
   Nil : Env tm []
@@ -54,5 +51,10 @@ defined {vars = x :: xs} n (b :: env)
            Nothing => do MkIsDefined prf <- defined n env
                          pure (MkIsDefined (Later prf))
            Just Refl => Just (MkIsDefined First)
+
+export
+mkEnv : (vs : List Name) -> Env Term vs
+mkEnv [] = []
+mkEnv (n :: ns) = (PVar Erased) :: mkEnv ns
 
  
