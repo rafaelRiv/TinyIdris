@@ -18,17 +18,19 @@ export
 toClosure : Env Term outer -> Term outer -> Closure outer
 toClosure env tm = MkClosure [] env tm
 
-eval : {free, vars : _} ->
-       Env Term free -> LocalEnv free vars ->
-       Term (vars ++ free) -> Stack free -> Core (NF free)
-eval env locs TType stk = pure NType
-eval env locs Erased stk = pure NErased
-eval env locs term stk = pure NErased
+parameters (defs : Defs)
+  mutual
+    eval : {free, vars : _} ->
+          Env Term free -> LocalEnv free vars ->
+          Term (vars ++ free) -> Stack free -> Core (NF free)
+    eval env locs TType stk = pure NType
+    eval env locs Erased stk = pure NErased
+    eval env locs term stk = pure NErased
 
 export
 nf : {vars : _} ->
      Defs -> Env Term vars -> Term vars -> Core (NF vars)
-nf defs env tm = pure NErased-- eval defs env [] tm []
+nf defs env tm = eval defs env [] tm []
 
 export
 gnf : {vars : _} ->
