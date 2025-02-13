@@ -1,4 +1,4 @@
-data Nat : Type where
-     Z : Nat
-     S : Nat -> Nat
+-- Term to typecheck
+vect1 : Vect (2 + n)
+vect2 : Vect (S (S n))
 
