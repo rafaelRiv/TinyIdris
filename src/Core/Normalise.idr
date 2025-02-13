@@ -21,6 +21,9 @@ toClosure env tm = MkClosure [] env tm
 eval : {free, vars : _} ->
        Env Term free -> LocalEnv free vars ->
        Term (vars ++ free) -> Stack free -> Core (NF free)
+eval env locs TType stk = pure NType
+eval env locs Erased stk = pure NErased
+eval env locs term stk = pure NErased
 
 export
 nf : {vars : _} ->
