@@ -5,6 +5,7 @@ import public Parser.Rule.Common
 import public Parser.Support
 
 import Core.TT
+import Core.Primitive
 
 %default total
 
@@ -25,6 +26,14 @@ eoi
     isEOI : Token -> Bool
     isEOI EndInput = True
     isEOI _ = False
+
+export
+constant : Rule Constant
+constant =
+    terminal "Expected constant"
+    (\x => case tok x of
+              IntegerLit i => Just (BI i)
+              _ => Nothing)
 
 export
 symbol : String -> Rule ()
@@ -64,8 +73,16 @@ unqualifiedName : Rule String
 unqualifiedName = identPart
 
 export
+operatorCandidate : Rule String
+operatorCandidate
+    = terminal "Expect operator"
+               (\x => case tok x of
+                          Symbol s => Just s
+                          _ => Nothing)
+
+export
 name : Rule Name
-name = do n <- unqualifiedName
+name = do n <- unqualifiedName <|> operatorCandidate
           pure (UN n)
 
 export
