@@ -27,8 +27,13 @@ processData (MkImpData n tycon datacons) =
       -- Add it to the context before checking data constructors
       -- Exercise: We should also check whether it't already defined!
       defs <- get Ctxt
+
       arity <- getArity defs [] tychk
       addDef n (newDef tychk (TCon 0 arity))
+
+      defs' <- get Ctxt
+      coreLift $ printLn defs'
+
       chkcons <- traverse processCon datacons
 
       -- TODO : add cons to def

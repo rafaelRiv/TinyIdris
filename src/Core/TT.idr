@@ -116,6 +116,16 @@ data Term : List Name -> Type where
   Erased : Term vars
 
 public export
+Show (Term names) where
+ {- 
+  show (IVar name) = "Var " ++ show name
+  show (IPi info name arg scope) = "IPi " ++ show info ++ " " ++ show arg ++ " " ++ " " ++ show scope
+  show (IApp imp imp') = "IApp " ++ show imp ++ " " ++ show imp' -}
+  show TType = "TType"
+  show Erased = "Erased"
+  show _ = "Not yet implemented"
+
+public export
 interface Weaken (0 tm : List Name -> Type) where
   weaken : {n,vars : _} -> tm vars -> tm (n :: vars)
   weakenNs : {vars : _} -> (ns : List Name) -> tm vars -> tm (ns ++ vars)
