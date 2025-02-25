@@ -1,6 +1,7 @@
 module TTImp.Parser
 
 import Core.TT
+import Core.Primitive
 import public Libraries.Text.Parser
 import Parser.Source
 import public TTImp.TTImp
@@ -26,6 +27,8 @@ atom fname
            pure Implicit
     <|> do x <- name
            pure (IVar x)
+    <|> do x <- constant
+           pure (IPrim x)
 
 getRight : Either a b -> Maybe b
 getRight (Left _) = Nothing

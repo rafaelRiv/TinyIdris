@@ -1,10 +1,15 @@
 module TTImp.TTImp
 
 import Core.TT
+import Core.Primitive
+import Data.Vect
+
+vect1 : Vect (plus 2 2) Int
 
 public export
 data RawImp : Type where
   IVar : Name -> RawImp 
+  IPrim : Constant -> RawImp 
   IPi : PiInfo -> Maybe Name ->
       (argTy : RawImp) -> (retTy : RawImp) -> RawImp
   ILam : PiInfo -> Maybe Name ->
@@ -46,8 +51,9 @@ Show RawImp where
   show IType = "IType"
   show Implicit = "Implicit"
   show (IVar name) = "Var " ++ show name
+  show (IPrim prim) = "Prim " ++ show prim
   show (IPi info name arg scope) = "IPi " ++ show info ++ " " ++ show arg ++ " " ++ " " ++ show scope
-  show (IApp imp imp') = "IApp " ++ show imp ++ " " ++ show imp'
+  show (IApp imp imp') = "IApp : [" ++ show imp ++ "][" ++ show imp' ++ "]"
   show _ = "Not yet implemented"
 
 public export
