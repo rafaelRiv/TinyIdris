@@ -38,8 +38,14 @@ processData (MkImpData n tycon datacons) =
                   do carity <- getArity defs [] ty
                      addDef cn (newDef ty (DCon (cast i) carity)))
                 (zip [0..(length chkcons)] chkcons)
+    
+      coreLift $ putStrLn "Global defs after processData : \n"
+      defs <- get Ctxt
+      coreLift $ printLn defs
+      coreLift $ putStrLn "\n"
 
       coreLift $ putStrLn $ "Processed " ++ show n
+      coreLift $ putStrLn "\n"
 
 
 

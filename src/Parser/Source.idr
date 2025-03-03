@@ -9,7 +9,9 @@ import Libraries.Utils.Either
 runParser : Show ty => {e: _ } -> (str: String) -> Grammar (TokenData Token) e ty -> IO (Either (ParseError Token) ty)
 runParser str p = do
   let etoks = mapError LexFail $ lexTo str
+  putStrLn "Tokens : \n"
   putStrLn $ show etoks
+  putStrLn ""
   pure (do toks  <- etoks
            parsed <- mapError toGenericParsingError $ parse p toks
            Right (fst parsed))
