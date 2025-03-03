@@ -19,11 +19,21 @@ data Def : Type where
     Guess : (guess : Term []) ->
             (constraints : List Int) -> Def -- unification constraints
 
+export
+Show Def where
+  show (TCon tag arity) = "TCon"
+  show (DCon tag arity) = "DCon"
+  show _ = "Not implemented yet"
+
 public export
 record GlobalDef where
   constructor MkGlobalDef
   type : Term []
   definition : Def
+
+export
+Show GlobalDef where
+  show gd = "{ type : " ++ show gd.type ++ ", definition : " ++ show gd.definition
 
 export
 newDef : Term [] -> Def -> GlobalDef
@@ -32,6 +42,10 @@ newDef ty d = MkGlobalDef ty d
 export
 Defs : Type
 Defs = SortedMap Name GlobalDef
+
+export
+Show Defs where
+  show defs = show $ map show defs
 
 export
 lookupDef : Name -> Defs -> Core (Maybe GlobalDef)

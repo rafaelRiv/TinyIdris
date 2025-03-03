@@ -10,6 +10,8 @@ import Core.UnifyState
 import TTImp.Elab.Term
 import TTImp.TTImp
 
+import Data.List
+
 export
 processCon : {auto c : Ref Ctxt Defs} ->
              {auto u : Ref UST UState} ->
@@ -30,9 +32,13 @@ processData (MkImpData n tycon datacons) =
       arity <- getArity defs [] tychk
       addDef n (newDef tychk (TCon 0 arity))
       chkcons <- traverse processCon datacons
-
-      -- TODO : add cons to def
       
+      defs <- get Ctxt
+      traverse_ (\(i, (cn,ty)) =>
+                  do carity <- getArity defs [] ty
+                     addDef cn (newDef ty (DCon (cast i) carity)))
+                (zip [0..(length chkcons)] chkcons)
+
       coreLift $ putStrLn $ "Processed " ++ show n
 
 
