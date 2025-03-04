@@ -82,7 +82,7 @@ operatorCandidate
 
 export
 name : Rule Name
-name = do n <- unqualifiedName <|> operatorCandidate
+name = do n <- unqualifiedName -- <|> operatorCandidate
           pure (UN n)
 
 export
@@ -188,7 +188,7 @@ terminator valid laststart
                else fail "Not the end of a block entry"
       afterDedent (AfterPos c) col
           = if col <= laststart
-               then pure AnyIndent
+               then pure (AtPos c)
                else fail "Not the end of a block entry"
       afterDedent (AtPos c) col
           = if col <= laststart

@@ -37,7 +37,7 @@ getRight (Right v) = Just v
 bindSymbol : Rule PiInfo
 bindSymbol 
     = do symbol "->"
-         pure Implicit
+         pure Explicit
 
 mutual
   appExpr : FileName -> IndentInfo -> Rule RawImp
