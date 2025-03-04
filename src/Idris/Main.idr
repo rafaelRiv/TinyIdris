@@ -12,7 +12,13 @@ runMain : List ImpDecl -> Core ()
 runMain decls = do
   c <- newRef Ctxt !initDefs
   u <- newRef UST initUState
-  traverse_ processDecl decls
+  traverse_ (\imp => do 
+      processDecl imp
+      coreLift $ putStrLn "Global defs : \n"
+      defs <- get Ctxt
+      coreLift $ printLn defs
+      coreLift $ putStrLn "\n"
+    ) decls
 
 main : IO ()
 main = do 

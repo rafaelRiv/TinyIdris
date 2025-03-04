@@ -9,6 +9,8 @@ import Core.UnifyState
 
 import TTImp.TTImp
 
+import Data.Maybe
+
 checkExp : {vars : _} ->
            {auto c : Ref Ctxt Defs} ->
            {auto u : Ref UST UState} ->
@@ -38,5 +40,12 @@ checkTerm env (IVar n) exp =
                Just gdef <- lookupDef n defs
                   | Nothing => throw (UndefinedName n)
                pure (TType,gType)
+checkTerm env (IPi p mn argTy retTy) exp =
+    do let n = fromMaybe (MN "_" 0) mn
+       (argTytm, gargTyty) <- checkTerm env argTy (Just gType)
+       let env' : Env Term (n :: vars)
+                = Pi p argTytm :: env
+       (retTytm, gretTyty) <- checkTerm env' retTy (Just gType)
+       checkExp env (Bind n (Pi p argTytm) retTytm) gType exp
 checkTerm env IType exp = pure (TType, gType)
 checkTerm env imp exp = pure (TType, gType)
