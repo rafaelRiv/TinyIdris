@@ -21,9 +21,12 @@ data Def : Type where
 
 export
 Show Def where
+  show None = "None"
   show (TCon tag arity) = "TCon"
   show (DCon tag arity) = "DCon"
-  show _ = "Not implemented yet"
+  show (PMDef args treeCT) = "PMDef"
+  show Hole = "Hole"
+  show (Guess guess constraints) = "Guess"
 
 public export
 record GlobalDef where

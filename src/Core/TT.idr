@@ -2,6 +2,8 @@ module Core.TT
 
 import Decidable.Equality
 
+%default partial
+
 public export
 data Name : Type where
   UN : String -> Name -- user written name
@@ -86,6 +88,12 @@ data Binder : Type -> Type where
   PVar : ty -> Binder ty
   PVTy : ty -> Binder ty
 
+public export
+Show ty => Show (Binder ty) where
+  show (Lam piInfo ty) = "Lam"
+  show (Pi piInfo ty) = "Pi " ++ show  piInfo ++ " " ++ show ty
+  show _ = "Not Implemented"
+
 export
 binderType : Binder tm -> tm
 binderType (Lam x ty) = ty
@@ -117,13 +125,13 @@ data Term : List Name -> Type where
 
 public export
 Show (Term names) where
- {- 
-  show (IVar name) = "Var " ++ show name
-  show (IPi info name arg scope) = "IPi " ++ show info ++ " " ++ show arg ++ " " ++ " " ++ show scope
-  show (IApp imp imp') = "IApp " ++ show imp ++ " " ++ show imp' -}
+  show (Local idx p) = "Local"
+  show (Ref type name) = "Ref"
+  show (Meta name terms) = "Meta " ++ show name
+  show (App term term') = "App " ++ show term ++ " " ++ show term'
+  show (Bind name binders scope) = "Binder " ++ show name ++ "," ++ assert_total(show binders) ++ "," ++ show scope
   show TType = "TType"
   show Erased = "Erased"
-  show _ = "Not yet implemented"
 
 public export
 interface Weaken (0 tm : List Name -> Type) where
