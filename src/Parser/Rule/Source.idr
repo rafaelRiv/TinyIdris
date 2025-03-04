@@ -192,7 +192,7 @@ terminator valid laststart
                else fail "Not the end of a block entry"
       afterDedent (AtPos c) col
           = if col <= laststart
-               then pure AnyIndent
+               then pure (AtPos c)
                else fail "Not the end of a block entry"
       afterDedent EndOfBlock col = pure EndOfBlock
 
