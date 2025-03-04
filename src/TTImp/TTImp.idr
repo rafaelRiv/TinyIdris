@@ -52,7 +52,7 @@ Show RawImp where
   show Implicit = "Implicit"
   show (IVar name) = "Var " ++ show name
   show (IPrim prim) = "Prim " ++ show prim
-  show (IPi info name arg scope) = "IPi " ++ show info ++ " " ++ show arg ++ " " ++ " " ++ show scope
+  show (IPi info name arg retTy) = "IPi " ++ show info ++ " " ++ show name ++ " " ++ show arg ++ " " ++ show retTy
   show (IApp imp imp') = "IApp : [" ++ show imp ++ "][" ++ show imp' ++ "]"
   show _ = "Not yet implemented"
 

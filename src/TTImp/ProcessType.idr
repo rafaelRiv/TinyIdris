@@ -16,5 +16,6 @@ processType : {auto c : Ref Ctxt Defs} ->
               Name -> RawImp -> Core ()
 processType n ty 
   = do
+      coreLift $ printLn ty
       (tychk, _) <- checkTerm [] ty (Just gType)
       addDef n (newDef tychk None)
