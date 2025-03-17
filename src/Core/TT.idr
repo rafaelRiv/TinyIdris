@@ -52,10 +52,21 @@ data NameType : Type where
   DataCon : (tag : Int) -> (arity : Name) -> NameType
   TyCon : (tag : Int) -> (arity : Name) -> NameType
 
+export
+Show NameType where
+  show Func = "Func"
+  show (DataCon t a) = "DataCon " ++ show (t, a)
+  show (TyCon t a) = "TyCon " ++ show (t, a)
+  show Bound = "Bound"
+
 public export
 data IsVar : Name -> Nat -> List Name -> Type where
   First : IsVar n Z (n :: ns)
   Later : IsVar n i ns -> IsVar n (S i) (m :: ns)
+
+public export
+data Var : List Name -> Type where
+  MkVar : {i : Nat} -> (0 p : IsVar n i vars) -> Var vars
 
 public export
 data NVar : Name -> List Name -> Type where
@@ -144,6 +155,10 @@ interface Weaken (0 tm : List Name -> Type) where
   weaken = weakenNs [_]
 
 export
+varExtend : IsVar x idx sx -> IsVar x idx (xs ++ ys)
+varExtend p = believe_me p
+
+export
 insertNVarNames : {outer, ns : _} ->
                   (idx : Nat) ->
                   (0 p : IsVar name idx (outer ++ inner)) ->
@@ -175,6 +190,12 @@ insertNames ns TType = TType
 export
 Weaken Term where
   weakenNs ns tm = insertNames {outer = []} ns tm
+
+namespace Bounds
+  public export
+  data Bounds : List Name -> Type where
+       None : Bounds []
+       Add : (x : Name) -> Name -> Bounds xs -> Bounds (x :: xs)
 
 
 
