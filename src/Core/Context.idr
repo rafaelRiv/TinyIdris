@@ -61,6 +61,10 @@ export
 initDefs : Core Defs
 initDefs = pure empty
 
+export
+clearDefs : Defs -> Core Defs
+clearDefs d = pure empty
+
 -- Add (or replace) a definition
 
 export
