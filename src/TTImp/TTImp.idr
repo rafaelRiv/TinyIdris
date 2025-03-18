@@ -54,6 +54,7 @@ Show RawImp where
   show (IPrim prim) = "Prim " ++ show prim
   show (IPi info name arg retTy) = "IPi " ++ show info ++ " " ++ show name ++ " " ++ show arg ++ " " ++ show retTy
   show (IApp imp imp') = "IApp : [" ++ show imp ++ "][" ++ show imp' ++ "]"
+  show (IPatvar name ty scope) = "IPatvar : " ++ show name ++ " [" ++ show ty ++ ":" ++ show scope ++ "]"
   show _ = "Not yet implemented"
 
 public export
@@ -65,10 +66,14 @@ Show ImpData where
   show (MkImpData name tycon datacons) = show name ++ " "  ++ show tycon ++ " " ++ show datacons
 
 public export
+Show ImpClause where
+  show (PatClause lhs rhs) = show lhs ++ " = " ++ show rhs
+
+public export
 Show ImpDecl where
   show (IClaim impTy) = "IClaim " ++ show impTy
   show (IData iDef) = "IData " ++ show iDef
-  show _ = "Not yet implemented"
+  show (IDef n clauses)= "IDef " ++ show n ++ " " ++ show clauses 
 
 
 

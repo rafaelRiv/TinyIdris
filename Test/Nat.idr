@@ -3,3 +3,5 @@ data Nat : Type where
      S : Nat -> Nat
 
 plus : Nat -> Nat -> Nat
+pat y : Nat =>
+    plus Z y = y

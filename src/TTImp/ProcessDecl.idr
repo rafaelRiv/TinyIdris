@@ -7,6 +7,7 @@ import Core.UnifyState
 
 import TTImp.ProcessData
 import TTImp.ProcessType
+import TTImp.ProcessDef
 
 import TTImp.TTImp
 
@@ -16,4 +17,4 @@ processDecl : {auto c : Ref Ctxt Defs} ->
               ImpDecl -> Core ()
 processDecl (IClaim (MkImpTy n ty)) = processType n ty
 processDecl (IData ddef) = processData ddef
-processDecl (IDef x xs) = pure ()
+processDecl (IDef x xs) = processDef x xs
