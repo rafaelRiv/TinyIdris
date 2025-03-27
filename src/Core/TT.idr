@@ -49,8 +49,8 @@ public export
 data NameType : Type where
   Func : NameType
   Bound : NameType
-  DataCon : (tag : Int) -> (arity : Name) -> NameType
-  TyCon : (tag : Int) -> (arity : Name) -> NameType
+  DataCon : (tag : Int) -> (arity : Nat) -> NameType
+  TyCon : (tag : Int) -> (arity : Nat) -> NameType
 
 export
 Show NameType where
@@ -137,7 +137,7 @@ data Term : List Name -> Type where
 public export
 Show (Term names) where
   show (Local idx p) = "Local"
-  show (Ref type name) = "Ref"
+  show (Ref type name) = "Ref [ " ++ show type ++ ", " ++ show name ++ " ]" 
   show (Meta name terms) = "Meta " ++ show name
   show (App term term') = "App " ++ show term ++ " " ++ show term'
   show (Bind name binders scope) = "Binder " ++ show name ++ "," ++ assert_total(show binders) ++ "," ++ show scope
@@ -157,6 +157,10 @@ interface Weaken (0 tm : List Name -> Type) where
 export
 varExtend : IsVar x idx sx -> IsVar x idx (xs ++ ys)
 varExtend p = believe_me p
+
+export
+embed : Term vars -> Term (vars ++ more)
+embed tm = believe_me tm
 
 export
 insertNVarNames : {outer, ns : _} ->

@@ -40,7 +40,11 @@ checkTerm env (IVar n) exp =
             do defs <- get Ctxt
                Just gdef <- lookupDef n defs
                   | Nothing => throw (UndefinedName n)
-               pure (TType,gType)
+               let nt = case definition gdef of
+                            DCon t a => DataCon t a
+                            TCon t a => TyCon t a
+                            _ => Func
+               checkExp env (Ref nt n) (gnf env (embed (type gdef))) exp
 checkTerm env (IPi p mn argTy retTy) exp =
     do let n = fromMaybe (MN "_" 0) mn
        (argTytm, gargTyty) <- checkTerm env argTy (Just gType)

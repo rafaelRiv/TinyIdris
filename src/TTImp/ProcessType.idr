@@ -19,3 +19,8 @@ processType n ty
       coreLift $ printLn ty
       (tychk, _) <- checkTerm [] ty (Just gType)
       addDef n (newDef tychk None)
+      coreLift $ putStrLn "Global defs after processType : \n"
+      defs <- get Ctxt
+      coreLift $ printLn defs
+      coreLift $ putStrLn "\n"
+
