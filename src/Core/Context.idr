@@ -1,6 +1,7 @@
 module Core.Context
 
 import Core.Core
+import Core.Env
 import Core.TT
 import Core.CaseTree
 
@@ -65,8 +66,13 @@ export
 clearDefs : Defs -> Core Defs
 clearDefs d = pure empty
 
--- Add (or replace) a definition
+public export
+data Clause : Type where
+  MkClause : {vars : _} ->
+             (env : Env Term vars) ->
+             (lhs : Term vars) -> (rhs : Term vars) -> Clause
 
+-- Add (or replace) a definition
 export
 addDef : {auto c : Ref Ctxt Defs} ->
          Name  -> GlobalDef -> Core ()

@@ -28,3 +28,12 @@ mutual
                  CaseTree (args ++ vars) -> CaseAlt vars
        -- Catch-all case
        DefaultCase : CaseTree vars -> CaseAlt vars
+
+-- Patterns, which arise from LHS expressions, and are converted to
+-- case trees
+public export
+data Pat : Type where
+     PCon : Name -> (tag : Int) -> (arity : Nat) ->
+            List Pat -> Pat
+     PLoc : Name -> Pat
+     PUnmatchable : Term [] -> Pat
