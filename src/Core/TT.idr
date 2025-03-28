@@ -163,6 +163,15 @@ embed : Term vars -> Term (vars ++ more)
 embed tm = believe_me tm
 
 export
+getFnArgs : Term vars -> (Term vars, List (Term vars))
+getFnArgs tm = getFA [] tm
+  where
+    getFA : List (Term vars) -> Term vars ->
+            (Term vars, List (Term vars))
+    getFA args (App f a) = getFA (a :: args) f
+    getFA args tm = (tm, args)
+
+export
 insertNVarNames : {outer, ns : _} ->
                   (idx : Nat) ->
                   (0 p : IsVar name idx (outer ++ inner)) ->
@@ -200,6 +209,55 @@ namespace Bounds
   data Bounds : List Name -> Type where
        None : Bounds []
        Add : (x : Name) -> Name -> Bounds xs -> Bounds (x :: xs)
+
+-- Substitute some explicit terms for names in a term, and remove those
+-- names from the scope
+namespace SubstEnv
+  public export
+  data SubstEnv : List Name -> List Name -> Type where
+       Nil : SubstEnv [] vars
+       (::) : Term vars ->
+              SubstEnv ds vars -> SubstEnv (d :: ds) vars
+
+  findDrop : {drop : _} -> {idx : Nat} -> (0 p : IsVar name idx (drop ++ vars)) ->
+             SubstEnv drop vars -> Term vars
+  findDrop {drop = []} var env = Local _ var
+  findDrop {drop = x :: xs} First (tm :: env) = tm
+  findDrop {drop = x :: xs} (Later p) (tm :: env)
+      = findDrop p env
+
+  find : {drop, vars, outer : _} -> {idx : Nat} ->
+         (0 p : IsVar name idx (outer ++ (drop ++ vars))) ->
+         SubstEnv drop vars ->
+         Term (outer ++ vars)
+  find {outer = []} var env = findDrop var env
+  find {outer = x :: xs} First env = Local _ First
+  find {outer = x :: xs} (Later p) env = weaken (find p env)
+
+  substEnv : {drop, vars, outer : _} ->
+             SubstEnv drop vars -> Term (outer ++ (drop ++ vars)) ->
+             Term (outer ++ vars)
+  substEnv env (Local _ prf)
+      = find prf env
+  substEnv env (Ref x name) = Ref x name
+  substEnv env (Meta n xs)
+      = Meta n (map (substEnv env) xs)
+  substEnv {outer} env (Bind x b scope)
+      = Bind x (map (substEnv env) b)
+               (substEnv {outer = x :: outer} env scope)
+  substEnv env (App fn arg)
+      = App (substEnv env fn) (substEnv env arg)
+  substEnv env Erased = Erased
+  substEnv env TType = TType
+
+  export
+  substs : {drop, vars : _} ->
+           SubstEnv drop vars -> Term (drop ++ vars) -> Term vars
+  substs env tm = substEnv {outer = []} env tm
+
+  export
+  subst : {vars, x : _} -> Term vars -> Term (x :: vars) -> Term vars
+  subst val tm = substEnv {outer = []} {drop = [_]} [val] tm
 
 
 
