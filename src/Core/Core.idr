@@ -1,17 +1,36 @@
 module Core.Core
 
+import Core.Env
 import Core.TT
 
 import public Data.IORef
 
 public export
+data CaseError = DifferingArgNumbers
+               | DifferingTypes
+               | MatchErased (vars ** (Env Term vars, Term vars))
+               | NotFullyApplied Name
+               | UnknownType
+public export
 data Error : Type where
+  CaseCompile : Name -> CaseError -> Error
   GenericMsg : String -> Error
   UndefinedName : Name -> Error
 
 public export
 Show Error where
   show (GenericMsg str) = str
+  show (CaseCompile n DifferingArgNumbers)
+      = "Patterns for " ++ show n ++ " have different numbers of arguments"
+  show (CaseCompile n DifferingTypes)
+      = "Patterns for " ++ show n ++ " require matching on different types"
+  show (CaseCompile n UnknownType)
+      = "Can't infer type to match in " ++ show n
+  show (CaseCompile n (MatchErased (_ ** (env, tm))))
+      = "Attempt to match on erased argument " ++ show tm ++
+                   " in " ++ show n
+  show (CaseCompile n (NotFullyApplied c))
+      = "Constructor " ++ show c ++ " is not fully applied"
   show (UndefinedName x) = "Undefined name " ++ show x
 
 public export
