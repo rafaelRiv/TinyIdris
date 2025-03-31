@@ -6,6 +6,7 @@ import Core.Env
 import Core.Normalise
 import Core.TT
 import Core.UnifyState
+import Core.CaseTree
 import Core.CaseBuilder
 
 import TTImp.Elab.Term
@@ -53,5 +54,8 @@ processDef n clauses
       -- Update the definition with the compiled tree
       updateDef n ({ definition := PMDef args tree })
 
+      coreLift $ putStrLn "Global defs after processDef : \n"
+      defs <- get Ctxt
+      coreLift $ printLn defs
 
       coreLift $ putStrLn $ "Processed " ++ show n ++ "\n\n"

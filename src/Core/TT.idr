@@ -65,6 +65,12 @@ data IsVar : Name -> Nat -> List Name -> Type where
   Later : IsVar n i ns -> IsVar n (S i) (m :: ns)
 
 public export
+dropVar : (ns : List Name) -> {idx : Nat} ->
+          (0 p : IsVar name idx ns) -> List Name
+dropVar (n :: xs) First = xs
+dropVar (n :: xs) (Later p) = n :: dropVar xs p
+
+public export
 data Var : List Name -> Type where
   MkVar : {i : Nat} -> (0 p : IsVar n i vars) -> Var vars
 
@@ -158,6 +164,12 @@ export
 varExtend : IsVar x idx sx -> IsVar x idx (xs ++ ys)
 varExtend p = believe_me p
 
+-- Term manipulation
+export
+apply : Term vars -> List (Term vars) -> Term vars
+apply fn [] = fn
+apply fn (a :: args) = apply (App fn a) args
+
 export
 embed : Term vars -> Term (vars ++ more)
 embed tm = believe_me tm
@@ -170,6 +182,15 @@ getFnArgs tm = getFA [] tm
             (Term vars, List (Term vars))
     getFA args (App f a) = getFA (a :: args) f
     getFA args tm = (tm, args)
+
+export
+isVar : (n : Name) -> (ns : List Name) -> Maybe (Var ns)
+isVar n [] = Nothing
+isVar n (m :: ms)
+    = case nameEq n m of
+           Nothing => do MkVar p <- isVar n ms
+                         pure (MkVar (Later p))
+           Just Refl => pure (MkVar First)
 
 export
 insertNVarNames : {outer, ns : _} ->
@@ -209,6 +230,21 @@ namespace Bounds
   data Bounds : List Name -> Type where
        None : Bounds []
        Add : (x : Name) -> Name -> Bounds xs -> Bounds (x :: xs)
+
+-- Replace any Ref Bound in a type with appropriate local
+export
+resolveNames : (vars : List Name) -> Term vars -> Term vars
+resolveNames vars (Ref Bound name)
+    = case isVar name vars of
+           Just (MkVar prf) => Local _ prf
+           _ => Ref Bound name
+resolveNames vars (Meta n xs)
+    = Meta n (map (resolveNames vars) xs)
+resolveNames vars (Bind x b scope)
+    = Bind x (map (resolveNames vars) b) (resolveNames (x :: vars) scope)
+resolveNames vars (App fn arg)
+    = App (resolveNames vars fn) (resolveNames vars arg)
+resolveNames vars tm = tm
 
 -- Substitute some explicit terms for names in a term, and remove those
 -- names from the scope
@@ -258,6 +294,23 @@ namespace SubstEnv
   export
   subst : {vars, x : _} -> Term vars -> Term (x :: vars) -> Term vars
   subst val tm = substEnv {outer = []} {drop = [_]} [val] tm
+
+-- Replace an explicit name with a term
+export
+substName : {vars : _} -> Name -> Term vars -> Term vars -> Term vars
+substName x new (Ref nt name)
+    = case nameEq x name of
+           Nothing => Ref nt name
+           Just Refl => new
+substName x new (Meta n xs)
+    = Meta n (map (substName x new) xs)
+-- ASSUMPTION: When we substitute under binders, the name has always been
+-- resolved to a Local, so no need to check that x isn't shadowing
+substName x new (Bind y b scope)
+    = Bind y (map (substName x new) b) (substName x (weaken new) scope)
+substName x new (App fn arg)
+    = App (substName x new fn) (substName x new arg)
+substName x new tm = tm
 
 
 
