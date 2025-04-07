@@ -30,6 +30,7 @@ processClause : {auto c : Ref Ctxt Defs} ->
                 ImpClause -> Core Clause
 processClause (PatClause lhs rhs) 
   = do
+      coreLift $ printLn lhs
       (lhstm, lhsty) <- checkTerm [] lhs Nothing
       (vars ** (env, lhsenv, rhsexp)) <-
         getRHSEnv [] lhstm !(getTerm lhsty)

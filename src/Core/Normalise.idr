@@ -26,18 +26,30 @@ export
 toClosure : Env Term outer -> Term outer -> Closure outer
 toClosure env tm = MkClosure [] env tm
 
+evalTop : {free, vars : _} ->
+          Defs -> Env Term free -> LocalEnv free vars ->
+          Term (vars ++ free) -> Stack free -> Core (NF free)
+
 parameters (defs : Defs)
   mutual
     eval : {free, vars : _} ->
           Env Term free -> LocalEnv free vars ->
           Term (vars ++ free) -> Stack free -> Core (NF free)
+    eval env locs (Bind x b scope) stk
+      = do 
+        b' <- traverse (\tm => eval env locs tm []) b
+        pure $ NBind x b' (\defs', arg => evalTop defs' env (arg :: locs) scope stk)
     eval env locs TType stk = pure NType
     eval env locs Erased stk = pure NErased
-    eval env locs term stk = pure NErased
+    eval env locs term stk = do
+      coreLift $ printLn term
+      pure NErased
 
 evalClosure : {free : _} -> Defs -> Closure free -> Core (NF free)
 evalClosure defs (MkClosure locs env tm)
   = eval defs env locs tm []
+
+evalTop defs = eval defs
 
 export
 nf : {vars : _} ->

@@ -121,6 +121,14 @@ traverse_ f (x :: xs)
     = do f x
          traverse_ f xs
 
+namespace Binder
+  export
+  traverse : (a -> Core b) -> Binder a -> Core (Binder b)
+  traverse f (Lam p ty) = pure $ Lam p !(f ty)
+  traverse f (Pi p ty) = pure $ Pi p !(f ty)
+  traverse f (PVar ty) = pure $ PVar !(f ty)
+  traverse f (PVTy ty) = pure $ PVTy !(f ty)
+
 export
 data Ref : (l : label) -> Type -> Type where
       [search l]
