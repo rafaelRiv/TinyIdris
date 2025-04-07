@@ -35,6 +35,8 @@ parameters (defs : Defs)
     eval : {free, vars : _} ->
           Env Term free -> LocalEnv free vars ->
           Term (vars ++ free) -> Stack free -> Core (NF free)
+    eval env locs (Ref nt fn) stk
+        = evalRef env nt fn stk (NApp (NRef nt fn) stk)
     eval env locs (Bind x b scope) stk
       = do 
         b' <- traverse (\tm => eval env locs tm []) b
@@ -44,6 +46,15 @@ parameters (defs : Defs)
     eval env locs term stk = do
       coreLift $ printLn term
       pure NErased
+
+    evalRef : {free : _} ->
+              Env Term free ->
+              NameType -> Name -> Stack free -> (def : Lazy (NF free)) ->
+              Core (NF free)
+    evalRef env (DataCon tag arity) fn stk def = pure $ NDCon fn tag arity stk
+    evalRef env (TyCon tag arity) fn stk def = pure $ NTCon fn tag arity stk
+    evalRef env Bound fn stk def = pure def
+    evalRef env nt n stk def = pure def
 
 evalClosure : {free : _} -> Defs -> Closure free -> Core (NF free)
 evalClosure defs (MkClosure locs env tm)
