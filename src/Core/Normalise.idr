@@ -1,5 +1,6 @@
 module Core.Normalise
 
+import Core.CaseTree
 import Core.Context
 import Core.Core
 import Core.Env
@@ -26,6 +27,11 @@ export
 toClosure : Env Term outer -> Term outer -> Closure outer
 toClosure env tm = MkClosure [] env tm
 
+data CaseResult a
+  =  Result a
+   | NoMatch
+   | GotStuck
+
 evalTop : {free, vars : _} ->
           Defs -> Env Term free -> LocalEnv free vars ->
           Term (vars ++ free) -> Stack free -> Core (NF free)
@@ -47,6 +53,30 @@ parameters (defs : Defs)
       coreLift $ printLn term
       pure NErased
 
+    evalLocClosure : {free : _} ->
+                     Env Term free ->
+                     Stack free ->
+                     Closure free ->
+                     Core (NF free)
+    evalLocClosure env stk (MkClosure locs' env' tm')
+        = eval env' locs' tm' stk
+
+    evalLocal : {free, vars : _} ->
+                Env Term free ->
+                (idx : Nat) -> (0 p : IsVar name idx (vars ++ free)) ->
+                Stack free ->
+                LocalEnv free vars ->
+                Core (NF free)
+    -- If it's one of the free variables, we are done
+    -- (Idris 2 has Let bindings, which we'd need to check and evaluate here)
+    evalLocal {vars = []} env idx prf stk locs
+        = pure $ NApp (NLocal idx prf) stk
+    evalLocal env Z First stk (x :: locs)
+        = evalLocClosure env stk x
+    evalLocal {vars = x :: xs} {free}
+              env (S idx) (Later p) stk (_ :: locs)
+        = evalLocal {vars = xs} env idx p stk locs
+
     evalRef : {free : _} ->
               Env Term free ->
               NameType -> Name -> Stack free -> (def : Lazy (NF free)) ->
@@ -54,7 +84,102 @@ parameters (defs : Defs)
     evalRef env (DataCon tag arity) fn stk def = pure $ NDCon fn tag arity stk
     evalRef env (TyCon tag arity) fn stk def = pure $ NTCon fn tag arity stk
     evalRef env Bound fn stk def = pure def
-    evalRef env nt n stk def = pure def
+    evalRef env nt n stk def 
+        = do Just res <- lookupDef n defs
+                | Nothing => pure def
+             evalDef env (definition res) stk def
+
+    getCaseBound : List (Closure free) ->
+                   (args : List Name) ->
+                   LocalEnv free more ->
+                   Maybe (LocalEnv free (args ++ more))
+    getCaseBound []            []        loc = Just loc
+    getCaseBound []            (_ :: _)  loc = Nothing -- mismatched arg length
+    getCaseBound (arg :: args) []        loc = Nothing -- mismatched arg length
+    getCaseBound (arg :: args) (n :: ns) loc = (arg ::) <$> getCaseBound args ns loc
+
+    evalConAlt : {more, free : _} ->
+                 Env Term free ->
+                 LocalEnv free more ->
+                 Stack free ->
+                 (args : List Name) ->
+                 List (Closure free) ->
+                 CaseTree (args ++ more) ->
+                 Core (CaseResult (NF free))
+    evalConAlt env loc stk args args' sc
+         = do let Just bound = getCaseBound args' args loc
+                   | Nothing => pure GotStuck
+              evalTree env bound stk sc
+
+    tryAlt : {free, more : _} ->
+             Env Term free ->
+             LocalEnv free more ->
+             Stack free -> NF free -> CaseAlt more ->
+             Core (CaseResult (NF free))
+    -- Ordinary constructor matching
+    tryAlt {more} env loc stk (NDCon nm tag' arity args') (ConCase x tag args sc)
+         = if tag == tag'
+              then evalConAlt env loc stk args args' sc
+              else pure NoMatch
+    -- Default case matches against any *concrete* value
+    tryAlt env loc stk val (DefaultCase sc)
+         = if concrete val
+              then evalTree env loc stk sc
+              else pure GotStuck
+      where
+        concrete : NF free -> Bool
+        concrete (NDCon _ _ _ _) = True
+        concrete _ = False
+    tryAlt _ _ _ _ _ = pure GotStuck
+
+    findAlt : {args, free : _} ->
+              Env Term free ->
+              LocalEnv free args ->
+              Stack free -> NF free -> List (CaseAlt args) ->
+              Core (CaseResult (NF free))
+    findAlt env loc stk val [] = pure GotStuck
+    findAlt env loc stk val (x :: xs)
+         = do Result val <- tryAlt env loc stk val x
+                   | NoMatch => findAlt env loc stk val xs
+                   | GotStuck => pure GotStuck
+              pure (Result val)
+
+    evalTree : {args, free : _} -> Env Term free -> LocalEnv free args ->
+               Stack free -> CaseTree args ->
+               Core (CaseResult (NF free))
+    evalTree env loc stk (Case idx x _ alts)
+      = do xval <- evalLocal env idx (varExtend x) [] loc
+           -- Idris 2 also updates the local environment here, to save
+           -- recomputing, but it involves a slightly trickier definition
+           -- of closures, so we'll just carry on
+           findAlt env loc stk xval alts
+    evalTree env loc stk (STerm tm)
+          = do res <- eval env loc (embed tm) stk
+               pure (Result res)
+    evalTree env loc stk _ = pure GotStuck
+
+    argsFromStack : (args : List Name) ->
+                    Stack free ->
+                    Maybe (LocalEnv free args, Stack free)
+    argsFromStack [] stk = Just ([], stk)
+    argsFromStack (n :: ns) [] = Nothing
+    argsFromStack (n :: ns) (arg :: args)
+         = do (loc', stk') <- argsFromStack ns args
+              pure (arg :: loc', stk')
+
+    evalDef : {free : _} ->
+              Env Term free ->
+              Def ->
+              Stack free -> (def : Lazy (NF free)) ->
+              Core (NF free)
+    evalDef env (PMDef args tree) stk def
+        = case argsFromStack args stk of
+               Nothing => pure def
+               Just (locs', stk') =>
+                    do Result res <- evalTree env locs' stk' tree
+                            | _ => pure def
+                       pure res
+    evalDef env _ stk def = pure def
 
 evalClosure : {free : _} -> Defs -> Closure free -> Core (NF free)
 evalClosure defs (MkClosure locs env tm)
