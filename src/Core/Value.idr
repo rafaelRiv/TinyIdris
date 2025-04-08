@@ -40,3 +40,11 @@ mutual
        NType    : NF vars
        NErased  : NF vars
 
+Show (NF ns) where
+  show (NBind _ _ _) = "NBind"
+  show (NApp _ _) = "NApp"
+  show (NDCon _ _ _ _) = "NDCon"
+  show (NTCon _ _ _ _) = "NTCon"
+  show NType = "NType"
+  show NErased = "NErased"
+

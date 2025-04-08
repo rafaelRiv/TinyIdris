@@ -53,7 +53,8 @@ checkTerm env (IPi p mn argTy retTy) exp =
        (retTytm, gretTyty) <- checkTerm env' retTy (Just gType)
        checkExp env (Bind n (Pi p argTytm) retTytm) gType exp
 checkTerm env (IPatvar n ty scope) exp
-    = do (ty, gTyty) <- checkTerm env ty (Just gType)
+    = do 
+         (ty, gTyty) <- checkTerm env ty (Just gType)
          let env' : Env Term (n :: vars)
                   = PVar ty :: env
          (scopetm, gscopety) <- checkTerm env' scope Nothing
