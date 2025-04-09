@@ -298,7 +298,7 @@ mutual
                        !(sc defs (toClosure env (Ref Bound var)))
            b' <- quoteBinder q defs bound env b
            pure (Bind n b' sc')
-  {- quoteGenNF q defs bound env (NApp f args)
+  quoteGenNF q defs bound env (NApp f args)
       = do f' <- quoteHead q defs bound env f
            args' <- quoteArgs q defs bound env args
            pure $ apply f' args'
@@ -307,10 +307,9 @@ mutual
            pure $ apply (Ref (DataCon t ar) n) args'
   quoteGenNF q defs bound env (NTCon n t ar args)
       = do args' <- quoteArgs q defs bound env args
-           pure $ apply (Ref (TyCon t ar) n) args' -}
+           pure $ apply (Ref (TyCon t ar) n) args'
   quoteGenNF q defs bound env NErased = pure Erased
   quoteGenNF q defs bound env NType = pure TType
-  quoteGenNF q defs bound env _ = pure TType
 
 export
 Quote NF where
