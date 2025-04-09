@@ -341,4 +341,4 @@ getValArity defs env val = pure 0
 export
 getArity : {vars : _} ->
            Defs -> Env Term vars -> Term vars -> Core Nat
-getArity defs env tm = pure 0 -- getValArity defs env !(nf defs env tm)
+getArity defs env tm = getValArity defs env !(nf defs env tm)
