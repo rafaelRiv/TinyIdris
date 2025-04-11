@@ -5,6 +5,7 @@ import Core.Context
 import Core.Env
 import Core.Normalise
 import Core.TT
+import Core.Unify
 import Core.UnifyState
 import Core.Value
 
@@ -21,7 +22,10 @@ checkExp : {vars : _} ->
            (expected : Maybe (Glued vars)) ->
            Core (Term vars, Glued vars)
 checkExp env term got Nothing = pure (term, got)
-checkExp env term got (Just exp) = pure (term,exp)
+checkExp env term got (Just exp) = 
+  do defs <- get Ctxt
+     ures <- unify env !(getNF got) !(getNF exp)
+     pure (term,exp)
 
 export
 checkTerm : {vars : _} ->
